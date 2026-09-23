@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SARI ICD-10 Surveillance Dashboard | ระบบประมาณการและเฝ้าระวังผู้ป่วย SARI</title>
+  
+  <!-- Google Fonts: Sarabun (Standard Thai Official) & Inter (English) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          },
+          colors: {
+            ddc: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c1b',
+              brand: '#006535'
+            },
+            moph: {
+              50: '#f0fdf4',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Libraries (CDN with fallback support) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- DOCX Generation Engine (Local + CDN fallback) -->
+  <script src="./src/docx.umd.js"></script>
+
+  <style>
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 10mm 15mm 10mm;
+      }
+      html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        height: auto !important;
+        min-height: 0 !important;
+        display: block !important;
+        position: static !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Completely remove all top-level dashboard content from layout so it takes 0px space */
+      body > :not(#modal-surveillance-report) {
+        display: none !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+      }
+
+      /* Reset the report modal container so it renders at the absolute top of Page 1 */
+      #modal-surveillance-report {
+        display: block !important;
+        position: static !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        z-index: auto !important;
+      }
+      #modal-surveillance-report > div {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+      #printable-report-area {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-section {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 1rem !important;
+      }
+      .print-break-inside-avoid {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      .print-page-break {
+        page-break-before: always !important;
+        break-before: page !important;
+      }
+      table.print-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 6px !important;
+        margin-bottom: 10px !important;
+      }
+      table.print-table th, table.print-table td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 5px 8px !important;
+      }
+      table.print-table th {
+        background-color: #064e3b !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 11px !important;
+      }
+      img.print-chart-img {
+        max-width: 100% !important;
+        max-height: 270px !important;
+        height: auto !important;
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        object-fit: contain !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col text-slate-800 bg-slate-50 antialiased">
+
+  <!-- TOP SURVEILLANCE NAVBAR -->
+  <header class="bg-gradient-to-r from-[#022c1b] via-[#064e3b] to-[#043825] text-white border-b border-emerald-600/30 sticky top-0 z-40 shadow-lg shadow-emerald-950/20 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo & Header Title -->
+        <div class="flex items-center gap-3.5">
+          <!-- Institutional Logo Badge -->
+          <div class="flex items-center gap-2 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl shadow-xs border border-emerald-400/30 hover:bg-white transition flex-shrink-0">
+            <img src="assets/images/logo-ddc-epi.png" alt="กองระบาดวิทยา กรมควบคุมโรค" class="h-10 w-auto object-contain" title="กองระบาดวิทยา กรมควบคุมโรค (Division of Epidemiology, DDC)">
+            <div class="h-6 w-px bg-slate-200"></div>
+            <img src="assets/images/logo-fetp.png" alt="FETP Thailand" class="h-8 w-auto object-contain rounded" title="Field Epidemiology Training Programme - Thailand (FETP)">
+            <div class="h-6 w-px bg-slate-200"></div>
+            <img src="assets/images/logo-cdc.png" alt="U.S. CDC" class="h-7 w-auto object-contain" title="U.S. Centers for Disease Control and Prevention">
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-1.5" data-i18n="appTitle">
+                ระบบประมาณการและเฝ้าระวังผู้ป่วย SARI จากรหัส ICD-10
+              </h1>
+              <span id="demo-data-badge" class="hidden px-2 py-0.5 text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-full" data-i18n="demoDataBadge">
+                DEMO DATA — NOT REAL PATIENT DATA
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-emerald-200/90 truncate max-w-xl">
+              <span class="font-semibold text-emerald-300" data-i18n="institutionTitle">กองระบาดวิทยา กรมควบคุมโรค</span>
+              <span class="text-emerald-500">•</span>
+              <span class="text-emerald-200/80 truncate text-[11px]" data-i18n="appSubtitle">
+                Estimating and visualizing SARI activity from routine hospital admission ICD-10 data
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Controls: Facility inputs, Language & Buttons -->
+        <div class="flex items-center gap-2">
+          
+          <!-- Hospital Facility & Province Inputs -->
+          <div class="hidden xl:flex items-center gap-1.5 text-xs bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-700/60 shadow-inner">
+            <i class="fa-solid fa-hospital text-emerald-300"></i>
+            <input type="text" id="input-hospital-name" placeholder="Hospital name..." data-i18n-placeholder="reportFacilityLabel"
+              class="bg-transparent border-none text-emerald-100 placeholder-emerald-400/60 focus:outline-none w-32 text-xs">
+            <span class="text-emerald-700">|</span>
+            <input type="text" id="input-province" placeholder="Province..." data-i18n-placeholder="reportProvinceLabel"
+              class="bg-transparent border-none text-emerald-100 placeholder-emerald-400/60 focus:outline-none w-24 text-xs">
+          </div>
+
+          <!-- Language Switcher -->
+          <div class="flex items-center bg-emerald-950/80 p-0.5 rounded-lg border border-emerald-700/60">
+            <button id="btn-lang-th" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white shadow-sm transition">
+              ไทย
+            </button>
+            <button id="btn-lang-en" class="px-2.5 py-1 text-xs font-medium rounded text-emerald-200 hover:text-white transition">
+              English
+            </button>
+          </div>
+
+          <!-- About Model Button -->
+          <button id="btn-about-model" class="px-3 py-1.5 text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 rounded-lg border border-emerald-600/50 shadow-xs transition flex items-center gap-1.5" title="Model coefficients and methodology">
+            <i class="fa-solid fa-circle-info text-emerald-300"></i>
+            <span class="hidden sm:inline" data-i18n="aboutModelBtn">About Model</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- PRIVACY BANNER (Mandatory) -->
+    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-start gap-3 shadow-xs no-print">
+      <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <i class="fa-solid fa-shield-halved text-sm"></i>
+      </div>
+      <div class="text-xs text-emerald-900 leading-relaxed">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-emerald-950 uppercase tracking-wide text-[10px] bg-emerald-200/80 px-2 py-0.5 rounded" data-i18n="privacyBadge">
+            100% Client-Side In-Browser Processing
+          </span>
+          <span class="text-emerald-700">• No patient identifiers required</span>
+        </div>
+        <p class="mt-1 font-medium" data-i18n="privacyNotice">
+          Patient-level data are processed locally in your browser and are not uploaded to an external server.
+        </p>
+      </div>
+    </div>
+
+    <!-- VIEW 1: UPLOAD & LANDING PAGE -->
+    <div id="view-upload" class="space-y-6">
+      
+      <!-- Epidemiological Hero / Context Card -->
+      <div class="bg-gradient-to-br from-[#064e3b] via-[#043825] to-[#022316] text-white rounded-2xl p-8 sm:p-10 shadow-xl relative overflow-hidden border border-emerald-600/30">
+        <!-- Glowing Ambient Lighting -->
+        <div class="absolute -right-12 -bottom-12 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-12 -top-12 w-72 h-72 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="max-w-3xl relative z-10">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-semibold mb-4 backdrop-blur-xs">
+            <i class="fa-solid fa-shield-virus text-emerald-300"></i>
+            <span>กองระบาดวิทยา กรมควบคุมโรค • Sentinel Hospital Surveillance Study (2023–2024)</span>
+          </div>
+
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2 leading-tight" data-i18n="appTitle">
+            ระบบประมาณการและเฝ้าระวังผู้ป่วย SARI จากรหัส ICD-10
+          </h2>
+          <p class="text-sm text-emerald-100/90 mb-5 leading-relaxed" data-i18n="studyReference">
+            Based on: Evaluation of ICD-10 Admission Data to Complement Severe Acute Respiratory Infection Surveillance in Thailand: A Multicenter Mixed-Methods Study.
+          </p>
+
+          <!-- Institutional Co-Branding Glass Card -->
+          <div class="mb-6 p-3 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 inline-flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-3 bg-white/95 px-3 py-1.5 rounded-lg shadow-xs">
+              <img src="assets/images/logo-ddc-epi.png" alt="กองระบาดวิทยา" class="h-9 w-auto object-contain">
+              <div class="h-5 w-px bg-slate-200"></div>
+              <img src="assets/images/logo-fetp.png" alt="FETP Thailand" class="h-7 w-auto object-contain rounded">
+              <div class="h-5 w-px bg-slate-200"></div>
+              <img src="assets/images/logo-cdc.png" alt="US CDC" class="h-6 w-auto object-contain">
+            </div>
+            <div class="text-[11px] text-emerald-100 leading-snug">
+              <span class="font-bold text-white block">ความร่วมมือทางวิชาการและการเฝ้าระวังโรค</span>
+              กองระบาดวิทยา กรมควบคุมโรค • FETP Thailand • U.S. CDC
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-3">
+            <button id="btn-try-demo" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-extrabold text-sm shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2.5">
+              <i class="fa-solid fa-play"></i>
+              <span data-i18n="tryDemoBtn">Try with Demo Data</span>
+            </button>
+            <button id="btn-download-tpl-csv" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition flex items-center gap-2 backdrop-blur-xs">
+              <i class="fa-solid fa-file-csv text-emerald-300"></i>
+              <span data-i18n="downloadTemplateCsv">Download CSV Template</span>
+            </button>
+            <button id="btn-download-tpl-xlsx" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition flex items-center gap-2 backdrop-blur-xs">
+              <i class="fa-solid fa-file-excel text-emerald-300"></i>
+              <span data-i18n="downloadTemplateXlsx">Download Excel Template</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="absolute right-0 bottom-0 top-0 w-1/3 opacity-10 pointer-events-none hidden md:flex items-center justify-center">
+          <i class="fa-solid fa-chart-line text-[180px] text-white"></i>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Upload Zone -->
+      <div id="upload-dropzone" class="border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl p-10 bg-white hover:bg-emerald-50/20 text-center cursor-pointer transition-all duration-200 shadow-xs hover:shadow-md group">
+        <input type="file" id="file-upload-input" accept=".csv, .xlsx, .xls" class="hidden">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mb-4 group-hover:scale-105 group-hover:bg-emerald-100 transition">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1" data-i18n="uploadDataBtn">
+          Upload Hospital Admission Data
+        </h3>
+        <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">
+          Drag and drop your extracted hospital routine admission file here, or click to browse. Supports both <strong>.csv</strong> and <strong>.xlsx</strong> files.
+        </p>
+        <button onclick="document.getElementById('file-upload-input').click()" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm transition">
+          Browse File
+        </button>
+      </div>
+
+      <!-- Quick Template Explanation Table -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+          Standard Required Columns (Default Names)
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-xs text-left border border-slate-200">
+            <thead class="bg-slate-50 text-slate-700 font-semibold border-b">
+              <tr>
+                <th class="px-3 py-2 border-r font-mono">admit_date</th>
+                <th class="px-3 py-2 border-r font-mono">sex</th>
+                <th class="px-3 py-2 border-r font-mono">age</th>
+                <th class="px-3 py-2 font-mono">primary_ICD_10</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-mono text-slate-600">
+              <tr>
+                <td class="px-3 py-1.5 border-r">2026-01-01</td>
+                <td class="px-3 py-1.5 border-r">Male</td>
+                <td class="px-3 py-1.5 border-r">4</td>
+                <td class="px-3 py-1.5">J18.9</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-1.5 border-r">2026-01-01</td>
+                <td class="px-3 py-1.5 border-r">Female</td>
+                <td class="px-3 py-1.5 border-r">68</td>
+                <td class="px-3 py-1.5">R50.9</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-1.5 border-r">2026-01-02</td>
+                <td class="px-3 py-1.5 border-r">Male</td>
+                <td class="px-3 py-1.5 border-r">32</td>
+                <td class="px-3 py-1.5">J10.1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: COLUMN MAPPING & PREVIEW -->
+    <div id="view-mapping" class="hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900" data-i18n="columnMappingTitle">Data Column Mapping</h2>
+          <p class="text-xs text-slate-500" data-i18n="columnMappingSubtitle">
+            The system automatically detects columns. Review or modify mappings to match your hospital dataset.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-back-upload" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+            Back
+          </button>
+          <button id="btn-run-analysis" class="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 rounded-lg shadow-md transition flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-emerald-300"></i>
+            <span data-i18n="runAnalysisBtn">Run Analysis</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mapping Select Dropdowns -->
+      <div id="mapping-fields-container"></div>
+
+      <!-- Analytic Settings in Mapping -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" data-i18n="preferredModelLabel">
+            Preferred Model:
+          </label>
+          <select id="select-preferred-model" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-2 border">
+            <option value="auto" data-i18n="modelAuto">Automatic (Recommended: Model 2 when predictors available)</option>
+            <option value="model1" data-i18n="model1Only">Model 1 (ICD-10 category only)</option>
+            <option value="model2" data-i18n="model2Only">Model 2 (ICD-10 + age + sex + season)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" data-i18n="weekDefLabel">
+            Week Definition:
+          </label>
+          <select id="select-week-def" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-2 border">
+            <option value="epi" data-i18n="weekDefEpi">Epidemiological Week (Sunday–Saturday)</option>
+            <option value="iso" data-i18n="weekDefISO">ISO 8601 Week (Monday–Sunday)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 15 Rows Preview Table -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+        <h3 class="text-sm font-bold text-slate-900 mb-3" data-i18n="previewDataTitle">
+          First 15 Rows Preview (Pre-analysis)
+        </h3>
+        <div id="mapping-preview-table-container"></div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: FULL DASHBOARD -->
+    <div id="view-dashboard" class="hidden space-y-6">
+
+      <!-- Active Model Notification & Action Bar -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Active Model Badge & Tooltip -->
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide" data-i18n="activeModelBadge">Model Used:</span>
+              <span id="active-model-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                Model 2 (ICD-10 + age + sex + season)
+              </span>
+            </div>
+            <p id="active-model-desc" class="text-[11px] text-slate-400 mt-0.5">
+              Model 2 applied to rows with complete age, sex, and season; Model 1 applied to other eligible records.
+            </p>
+          </div>
+        </div>
+
+        <!-- Dashboard Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Data Quality Modal Button -->
+          <button id="btn-data-quality" class="px-3 py-1.5 text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg transition flex items-center gap-1.5 shadow-xs">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+            <span data-i18n="qualityAuditTitle">Data Quality</span>
+          </button>
+
+          <!-- Edit Mapping -->
+          <button id="btn-edit-mapping" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders"></i>
+            <span data-i18n="backToMappingBtn">Edit Mapping</span>
+          </button>
+
+          <!-- Upload New Data -->
+          <button id="btn-upload-new" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            <span>Upload New</span>
+          </button>
+
+          <!-- Export Excel Workbook -->
+          <button id="btn-export-excel" class="px-3 py-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="10-Sheet Comprehensive Excel Workbook">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Excel (.xlsx)</span>
+          </button>
+
+          <!-- Export Processed CSV -->
+          <button id="btn-export-csv" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="Row-Level Processed Data with Linear Predictors and Probabilities">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>CSV</span>
+          </button>
+
+          <!-- Generate Printable Report -->
+          <button id="btn-generate-report" class="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg shadow-md transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-invoice"></i>
+            <span data-i18n="downloadReportBtn">Surveillance Report</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- KPI SUMMARY CARDS (Top Row of 6 Cards) -->
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+        
+        <!-- Card 1: Total Uploaded -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiTotalUploaded">
+            Total Admissions
+          </span>
+          <div class="mt-2">
+            <div id="kpi-total-val" class="text-2xl font-extrabold text-slate-900 font-mono tracking-tight">-</div>
+            <div id="kpi-total-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Eligible Admissions -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiEligibleAdmissions">
+            Study-Eligible
+          </span>
+          <div class="mt-2">
+            <div id="kpi-eligible-val" class="text-2xl font-extrabold text-slate-800 font-mono tracking-tight">-</div>
+            <div id="kpi-eligible-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+        <!-- Card 3: Estimated SARI (DDC Emerald Hero KPI Card) -->
+        <div class="bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 rounded-xl border-2 border-emerald-500/80 shadow-xs flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-emerald-950 uppercase tracking-wide" data-i18n="kpiEstimatedSARI">
+              Estimated SARI
+            </span>
+            <i class="fa-solid fa-lungs-virus text-emerald-600 text-sm"></i>
+          </div>
+          <div class="mt-2">
+            <div id="kpi-sari-val" class="text-2xl font-black text-emerald-700 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-sub" class="text-[11px] font-semibold text-emerald-800/80 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+        <!-- Card 4: Study J-codes -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiStudyJCodes">
+            Study J-codes
+          </span>
+          <div class="mt-2">
+            <div id="kpi-jcodes-val" class="text-2xl font-extrabold text-blue-600 font-mono tracking-tight">-</div>
+            <div id="kpi-jcodes-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+        <!-- Card 5: Estimated SARI from J-codes -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromJ">
+            SARI from J-codes
+          </span>
+          <div class="mt-2">
+            <div id="kpi-sari-j-val" class="text-2xl font-extrabold text-slate-800 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-j-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+        <!-- Card 6: Estimated SARI from Non-J -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromNonJ">
+            SARI from Non-J
+          </span>
+          <div class="mt-2">
+            <div id="kpi-sari-nonj-val" class="text-2xl font-extrabold text-teal-700 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-nonj-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GLOBAL FILTERS TOOLBAR -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <span class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+            <i class="fa-solid fa-filter text-emerald-700"></i>
+            <span data-i18n="filtersHeader">Global Filters</span>
+          </span>
+          
+          <div class="flex items-center gap-3">
+            <!-- Full precision toggle -->
+            <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+              <input type="checkbox" id="toggle-full-precision" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+              <span>Full numeric precision</span>
+            </label>
+            <!-- Reset Filters -->
+            <button id="btn-reset-filters" class="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span data-i18n="resetFiltersBtn">Reset Filters</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5" data-i18n="filterDateRange">Start Date</label>
+            <input type="date" id="filter-start-date" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5">End Date</label>
+            <input type="date" id="filter-end-date" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5" data-i18n="filterAgeGroup">Age Group</label>
+            <select id="filter-age-group" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+              <option value="all" data-i18n="allOptions">All</option>
+              <option value="<2">&lt;2 years</option>
+              <option value="2-4">2–4 years</option>
+              <option value="5-14">5–14 years</option>
+              <option value="15-49">15–49 years</option>
+              <option value="50-64">50–64 years</option>
+              <option value=">=65">≥65 years</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5" data-i18n="filterSex">Sex</label>
+            <select id="filter-sex" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+              <option value="all" data-i18n="allOptions">All</option>
+              <option value="male" data-i18n="optMale">Male</option>
+              <option value="female" data-i18n="optFemale">Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5" data-i18n="filterAgeType">Patient Type</label>
+            <select id="filter-age-type" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+              <option value="all" data-i18n="allOptions">All</option>
+              <option value="pediatric" data-i18n="optPediatric">Pediatric (0–14)</option>
+              <option value="adult" data-i18n="optAdult">Adult (≥15)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-0.5" data-i18n="filterJCodeStatus">J-code Status</label>
+            <select id="filter-j-status" class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-1.5 border">
+              <option value="all" data-i18n="allOptions">All</option>
+              <option value="j" data-i18n="optStudyJ">Study J-code</option>
+              <option value="non_j" data-i18n="optStudyNonJ">Study Non-J code</option>
+              <option value="outside" data-i18n="optOutsideScope">Outside Scope</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MAIN TIME SERIES CHART -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900" data-i18n="mainTrendTitle">
+              SARI Surveillance Trends Over Time
+            </h3>
+            <p class="text-xs text-slate-500">
+              Eligible ICD admissions (Gray), Study J-codes (Blue), and Estimated SARI (Emerald)
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Weekly / Monthly Toggle -->
+            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button id="toggle-weekly" class="px-3 py-1 text-xs font-bold rounded bg-emerald-700 text-white" data-i18n="aggregationToggleWeekly">
+                Weekly
+              </button>
+              <button id="toggle-monthly" class="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900" data-i18n="aggregationToggleMonthly">
+                Monthly
+              </button>
+            </div>
+
+            <!-- Export PNG -->
+            <button id="btn-export-main-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-download"></i>
+              <span>PNG</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Series Visibility Toggles (Choose how many and which lines to show) -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4 pb-3 mb-3 border-b border-slate-100 text-xs">
+          <span class="font-medium text-slate-500 flex items-center gap-1.5" data-i18n="selectLinesLabel">
+            <i class="fa-solid fa-layer-group text-slate-400"></i>
+            Display Lines:
+          </span>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 transition select-none">
+            <input type="checkbox" id="toggle-line-eligible" checked class="rounded border-slate-300 text-slate-600 focus:ring-slate-500 h-3.5 w-3.5 cursor-pointer">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block"></span>
+            <span class="font-medium text-slate-700" data-i18n="lineEligibleLabel">Eligible Admissions</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-blue-50/60 hover:bg-blue-100/60 px-2.5 py-1 rounded-md border border-blue-200 transition select-none">
+            <input type="checkbox" id="toggle-line-jcodes" checked class="rounded border-blue-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+            <span class="font-medium text-blue-900" data-i18n="lineJCodesLabel">Study J-codes</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-emerald-50/80 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-300 transition select-none">
+            <input type="checkbox" id="toggle-line-sari" checked class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 cursor-pointer">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+            <span class="font-bold text-emerald-950" data-i18n="lineSARILabel">Estimated SARI</span>
+          </label>
+        </div>
+
+        <div class="relative w-full h-80 sm:h-96">
+          <canvas id="chart-main-timeseries"></canvas>
+        </div>
+      </div>
+
+      <!-- AGE GROUP SMALL MULTIPLES (2 x 3 GRID) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900" data-i18n="smallMultiplesTitle">
+              Estimated SARI by Age Group
+            </h3>
+            <p class="text-xs text-slate-500">
+              Small multiples across 6 epidemiological age strata (<2, 2–4, 5–14, 15–49, 50–64, ≥65 years)
+            </p>
+          </div>
+
+          <div class="flex items-center gap-4 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
+              <input type="checkbox" id="toggle-shared-y" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+              <span data-i18n="yAxisShared">Shared Y-axis</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
+              <input type="checkbox" id="toggle-overlay-j" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+              <span data-i18n="overlayJCodesLabel">Overlay J-codes</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="age-small-multiples-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+      </div>
+
+      <!-- TWO COLUMNS: SEX STRATIFIED & J VS NON-J CONTRIBUTION -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Sex Trends -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900" data-i18n="sexTrendsTitle">
+                Estimated SARI by Sex
+              </h3>
+              <p class="text-[11px] text-slate-500">Male (Teal) vs Female (Emerald)</p>
+            </div>
+            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button id="toggle-sex-combined" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-700 text-white shadow-xs">
+                Combined
+              </button>
+              <button id="toggle-sex-split" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900">
+                Split
+              </button>
+            </div>
+          </div>
+          <div id="sex-chart-container"></div>
+        </div>
+
+        <!-- J vs Non-J Contribution -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900" data-i18n="jVsNonJTitle">
+                Contribution of J-code and Non-J-code Diagnoses to Estimated SARI
+              </h3>
+              <p class="text-[11px] text-slate-500">100% Stacked comparison of Admissions vs Estimated SARI</p>
+            </div>
+            <button id="btn-export-j-non-j-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+          <div class="relative w-full h-64">
+            <canvas id="chart-j-vs-non-j"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ICD-10 COMPOSITION HORIZONTAL BAR -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900" data-i18n="icdCompositionTitle">
+              Eligible Admissions by ICD-10 Diagnostic Group
+            </h3>
+            <p class="text-[11px] text-slate-500">
+              Ordered by frequency. Emerald: Study J-codes (URTI, Flu, Pneumonia, Other Resp). Slate: Other validated study codes.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button id="toggle-icd-admissions" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-700 text-white shadow-xs" data-i18n="metricAdmissions">
+                Admissions
+              </button>
+              <button id="toggle-icd-sari" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900" data-i18n="metricEstimatedSARI">
+                Estimated SARI
+              </button>
+            </div>
+            <button id="btn-export-icd-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="relative w-full h-72">
+          <canvas id="chart-icd-composition"></canvas>
+        </div>
+      </div>
+
+      <!-- AGE x SEX DESCRIPTIVE & SARI TABLES -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Table 1: Admissions by Age Group and Sex -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-bold text-slate-900">
+              Admissions by Age Group and Sex
+            </h4>
+            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+              <button id="toggle-pct-overall" class="px-2 py-0.5 text-[11px] font-bold rounded bg-emerald-700 text-white shadow-xs">
+                Overall %
+              </button>
+              <button id="toggle-pct-row" class="px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900">
+                Row %
+              </button>
+            </div>
+          </div>
+          <div id="age-sex-descriptive-table-container" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- Table 2: Estimated SARI by Age Group and Sex -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-bold text-slate-900">
+              Estimated SARI by Age Group and Sex
+            </h4>
+            <span class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-300">
+              Sum of probabilities
+            </span>
+          </div>
+          <div id="age-sex-sari-table-container" class="overflow-x-auto"></div>
+        </div>
+
+      </div>
+
+      <!-- SEASONAL ANALYSIS & SUMMARY DEMOGRAPHICS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Seasonal Analysis Table -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <h4 class="text-sm font-bold text-slate-900 mb-1" data-i18n="seasonalAnalysisTitle">
+            SARI by Admission Season
+          </h4>
+          <p class="text-[11px] text-slate-500 mb-3">
+            Summer (Feb–May, Ref), Rainy (Jun–Oct), Winter (Nov–Jan). Descriptive analysis only.
+          </p>
+          <div id="seasonal-table-container" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- Demographics Summary -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <h4 class="text-sm font-bold text-slate-900 mb-1" data-i18n="demographicsTitle">
+            Characteristics of Eligible Admissions
+          </h4>
+          <p class="text-[11px] text-slate-500 mb-3">Key demographic indices across study-eligible admissions</p>
+          <div id="demographics-content-container"></div>
+        </div>
+
+      </div>
+
+      <!-- SCIENTIFIC INTERPRETATION & GENERALIZABILITY STATEMENTS -->
+      <div class="space-y-3">
+        <!-- Scientific Note -->
+        <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-4 text-xs text-emerald-950 flex items-start gap-3">
+          <i class="fa-solid fa-circle-info text-emerald-700 mt-0.5 text-sm flex-shrink-0"></i>
+          <div class="leading-relaxed">
+            <p class="font-semibold mb-1" data-i18n="interpretationNote">
+              Estimated SARI represents the sum of model-predicted probabilities and should be interpreted as an estimated case count rather than patient-level clinical diagnosis.
+            </p>
+            <p class="text-emerald-800" data-i18n="complementarySurveillanceNote">
+              This tool is intended to complement, not replace, existing clinical and syndromic SARI surveillance.
+            </p>
+          </div>
+        </div>
+
+        <!-- Generalizability Warning -->
+        <div class="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 text-xs text-amber-950 flex items-start gap-3">
+          <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
+          <div class="leading-relaxed">
+            <p class="font-semibold text-amber-900 mb-0.5">Scientific Generalizability Notice:</p>
+            <p class="text-amber-800" data-i18n="generalizabilityWarning">
+              The underlying models were developed using data from six SARI sentinel hospitals in Thailand during 2023–2024. Model performance may change with differences in coding practices, patient populations, circulating pathogens, or healthcare utilization. Periodic local validation is recommended.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER METADATA -->
+      <div id="analysis-metadata-footer"></div>
+
+    </div>
+
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- 1. DATA QUALITY MODAL -->
+  <div id="modal-data-quality" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check text-emerald-700"></i>
+          <span data-i18n="qualityAuditTitle">Data Quality Audit & Problematic Records</span>
+        </h3>
+        <button id="btn-close-dq-modal" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4 text-xs">
+        <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+          <span class="text-emerald-800 block text-[11px]">Valid Eligible Rows</span>
+          <span id="dq-val-valid" class="text-lg font-bold text-emerald-950 font-mono">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <span class="text-slate-600 block text-[11px]">Invalid Dates</span>
+          <span id="dq-val-dates" class="text-lg font-bold text-slate-800 font-mono">-</span>
+        </div>
+        <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+          <span class="text-amber-800 block text-[11px]">Missing Ages</span>
+          <span id="dq-val-missing-age" class="text-lg font-bold text-amber-950 font-mono">-</span>
+        </div>
+        <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+          <span class="text-amber-800 block text-[11px]">Invalid Ages (>120)</span>
+          <span id="dq-val-invalid-age" class="text-lg font-bold text-amber-950 font-mono">-</span>
+        </div>
+        <div class="bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+          <span class="text-rose-800 block text-[11px]">Missing ICD-10</span>
+          <span id="dq-val-missing-icd" class="text-lg font-bold text-rose-950 font-mono">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <span class="text-slate-600 block text-[11px]">Outside Model Scope</span>
+          <span id="dq-val-outside-scope" class="text-lg font-bold text-slate-800 font-mono">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <span class="text-slate-600 block text-[11px]">Unresolved Sex</span>
+          <span id="dq-val-sex" class="text-lg font-bold text-slate-800 font-mono">-</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto border border-slate-200 rounded-xl mb-4">
+        <table class="min-w-full text-xs text-left divide-y divide-slate-200">
+          <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0">
+            <tr>
+              <th class="px-2.5 py-2 border-r">Row #</th>
+              <th class="px-2.5 py-2 border-r">Date</th>
+              <th class="px-2.5 py-2 border-r">Age</th>
+              <th class="px-2.5 py-2 border-r">Sex</th>
+              <th class="px-2.5 py-2 border-r">ICD-10</th>
+              <th class="px-2.5 py-2">Identified Issue</th>
+            </tr>
+          </thead>
+          <tbody id="dq-problem-rows-tbody" class="divide-y divide-slate-100 bg-white"></tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <button id="btn-download-dq-report" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-download"></i>
+          <span>Download Audit Report (CSV)</span>
+        </button>
+        <button onclick="document.getElementById('modal-data-quality').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MODEL INFORMATION & CALCULATION EXAMPLE MODAL -->
+  <div id="modal-model-info" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-square-root-variable text-emerald-700"></i>
+            <span>About SARI ICD-10 Model v1.0 (Thailand Sentinel Hospital Study)</span>
+          </h3>
+          <p class="text-xs text-slate-500">Methodology, regression equations, and mathematical transparency</p>
+        </div>
+        <button id="btn-close-model-info" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-6 text-xs text-slate-700 pr-2">
+        
+        <!-- Explanation block -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 leading-relaxed">
+          <p class="mb-2 font-medium">
+            This application estimates the expected number of admissions meeting the SARI case definition using age-specific multivariable logistic regression equations developed from sentinel hospital surveillance record reviews in Thailand.
+          </p>
+          <p>
+            Separate models are strictly applied to pediatric patients aged 0–14 years and adults aged ≥15 years. Individual predicted probabilities are summed to estimate SARI activity during each surveillance period.
+          </p>
+        </div>
+
+        <!-- Calculation Walkthrough Example -->
+        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+          <h4 class="text-sm font-bold text-emerald-950 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-emerald-700"></i>
+            <span>Calculation Example (Synthetic Patient Walkthrough)</span>
+          </h4>
+          <div class="font-mono text-xs space-y-1 bg-white p-3 rounded-lg border border-emerald-200 text-slate-800">
+            <div><strong>Patient Profile:</strong> Adult, Female, 65 years old, Pneumonia (J18.9), Rainy season (July)</div>
+            <div><strong>Active Model:</strong> Adult Model 2 (ICD-10 + age + sex + season)</div>
+            <div class="mt-2 text-slate-600">--------------------------------------------------</div>
+            <div>Intercept:               -2.721175174</div>
+            <div>Pneumonia (J18.9) β:     +3.158763163</div>
+            <div>Age β (-0.005659015 × 65): -0.367835975</div>
+            <div>Female β (Reference):     +0.000000000</div>
+            <div>Rainy season β:          -0.203857226</div>
+            <div class="text-slate-600">--------------------------------------------------</div>
+            <div class="font-bold text-emerald-900">Linear Predictor η = -0.134105212</div>
+            <div class="font-bold text-emerald-700">Predicted Probability P = 1 / (1 + exp(-η)) = 0.4665 (46.7%)</div>
+          </div>
+          <p class="text-[11px] text-emerald-850 mt-2 italic">
+            * This 0.4665 probability is accumulated into the total Estimated SARI sum without threshold dichotomization.
+          </p>
+        </div>
+
+        <!-- Model 1 vs 2 Specifications -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border border-slate-200 rounded-xl p-3 bg-white">
+            <h5 class="font-bold text-slate-900 mb-1">Pediatric Model (Age 0–14 years)</h5>
+            <ul class="list-disc pl-4 space-y-1 text-slate-600">
+              <li>Model 1 Intercept: -1.5070759</li>
+              <li>Model 2 Intercept: -1.6956315454</li>
+              <li>Age β: -0.0009499213 / yr</li>
+              <li>Male β: -0.1375864474 (Female = Ref = 0)</li>
+              <li>Rainy β: +0.5112501576 | Winter β: +0.2388286021</li>
+            </ul>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-3 bg-white">
+            <h5 class="font-bold text-slate-900 mb-1">Adult Model (Age ≥15 years)</h5>
+            <ul class="list-disc pl-4 space-y-1 text-slate-600">
+              <li>Model 1 Intercept: -3.0706336</li>
+              <li>Model 2 Intercept: -2.721175174</li>
+              <li>Age β: -0.005659015 / yr</li>
+              <li>Male β: +0.002076021 (Female = Ref = 0)</li>
+              <li>Rainy β: -0.203857226 | Winter β: +0.085881590</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 flex justify-end">
+        <button onclick="document.getElementById('modal-model-info').classList.add('hidden')" class="px-5 py-2 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PRINTABLE SURVEILLANCE REPORT MODAL (Formal Hospital Printout) -->
+  <div id="modal-surveillance-report" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl max-h-[92vh] flex flex-col">
+      
+      <!-- Top Action Bar (hidden on print) -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4 no-print">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-medical text-emerald-700"></i>
+          <span class="font-bold text-slate-800 text-sm">Hospital Surveillance Report (Division of Epidemiology DDC)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-export-report-docx" class="px-4 py-2 text-xs font-bold bg-blue-700 hover:bg-blue-600 text-white rounded-lg shadow-sm flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-word"></i>
+            <span data-i18n="exportDocxBtn">ส่งออกไฟล์ Word (.docx) พร้อมนำเสนอ</span>
+          </button>
+          <button id="btn-print-report" class="px-4 py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-sm flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-print"></i>
+            <span data-i18n="printBtn">Print Report / Save PDF</span>
+          </button>
+          <button id="btn-close-report" class="px-3 py-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg">
+            Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="printable-report-area" class="flex-1 overflow-y-auto p-4 bg-white border border-slate-200 rounded-xl space-y-6 text-xs text-slate-800">
+        
+        <!-- Official Institutional Bulletin Header with Logos -->
+        <div class="border-b-2 border-emerald-900 pb-4 mb-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <!-- Institutional Logos -->
+            <div class="flex items-center gap-3">
+              <img src="assets/images/logo-ddc-epi.png" alt="กองระบาดวิทยา กรมควบคุมโรค" class="h-12 w-auto object-contain">
+              <div class="h-8 w-px bg-slate-300"></div>
+              <img src="assets/images/logo-fetp.png" alt="FETP Thailand" class="h-9 w-auto object-contain rounded">
+              <div class="h-8 w-px bg-slate-300"></div>
+              <img src="assets/images/logo-cdc.png" alt="U.S. CDC" class="h-8 w-auto object-contain">
+            </div>
+
+            <div class="text-left sm:text-right">
+              <div class="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                กองระบาดวิทยา กรมควบคุมโรค กระทรวงสาธารณสุข
+              </div>
+              <div class="text-[11px] font-semibold text-slate-700">
+                Division of Epidemiology, Department of Disease Control, Thailand
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5">
+                In collaboration with FETP Thailand & U.S. CDC
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-end">
+            <div>
+              <h2 id="report-facility-name" class="text-lg font-bold text-slate-900 mb-0.5">
+                General Hospital Sentinel Site
+              </h2>
+              <p class="text-xs text-slate-600">
+                Province: <span id="report-province-name" class="font-medium">Thailand</span> |
+                Reporting Period: <span id="report-period-text" class="font-medium">All Dates</span>
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2.5 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 rounded uppercase">
+                SARI Surveillance Bulletin
+              </span>
+              <div class="text-[11px] text-slate-500 mt-1">Generated: <span id="report-date-generated">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Headline Numbers in Report -->
+        <div class="grid grid-cols-5 gap-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+          <div>
+            <span class="text-[10px] text-slate-500 uppercase block">Total Uploaded</span>
+            <span id="rep-val-total" class="text-base font-bold text-slate-900 font-mono">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 uppercase block">Study-Eligible</span>
+            <span id="rep-val-eligible" class="text-base font-bold text-slate-800 font-mono">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-rose-700 uppercase block font-bold">Estimated SARI</span>
+            <span id="rep-val-sari" class="text-base font-extrabold text-rose-600 font-mono">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 uppercase block">Study J-codes</span>
+            <span id="rep-val-jcodes" class="text-base font-bold text-blue-600 font-mono">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 uppercase block">Non-J SARI</span>
+            <span id="rep-val-nonj" class="text-base font-bold text-teal-700 font-mono">-</span>
+          </div>
+        </div>
+
+        <!-- Slide-Ready Presentation Snippets Box -->
+        <div id="report-slide-snippets" class="no-print"></div>
+
+        <!-- Section 1: KPI Summary Table -->
+        <div id="report-sec-kpis"></div>
+
+        <!-- Figure 1: Main Surveillance Trends Chart -->
+        <div id="report-sec-fig1"></div>
+
+        <!-- Section 2: Age-Group Stratification Table -->
+        <div id="report-sec-age"></div>
+
+        <!-- Section 3: Age x Sex Cross-Tabulation Table -->
+        <div id="report-sec-agesex"></div>
+
+        <!-- Section 4: ICD-10 Diagnostic Groups Distribution Table & Figure 2 -->
+        <div id="report-sec-icd"></div>
+
+        <!-- Section 5: Seasonal Analysis Table & Figure 3 -->
+        <div id="report-sec-seasonal"></div>
+
+        <!-- Section 6: Data Quality Audit Summary Table -->
+        <div id="report-sec-audit"></div>
+
+        <!-- Section 7: Methodological Disclaimers & Notes -->
+        <div id="report-sec-methodology"></div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Load Main Application Script -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

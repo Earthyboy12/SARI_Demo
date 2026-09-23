@@ -1,0 +1,24 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Dependencies & Logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python cache & server logs
+__pycache__/
+*.pyc
+*.log
+
+# Editor & IDE artifacts
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Vercel build output & metadata
+.vercel/
