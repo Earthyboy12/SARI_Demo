@@ -22,6 +22,7 @@ import {
 export const state = {
   lang: "th", // "th" | "en"
   view: "upload", // "upload" | "mapping" | "dashboard"
+  dashboardMode: "simplified", // "simplified" | "advanced"
   rawData: [],
   rawHeaders: [],
   columnMapping: {
@@ -193,6 +194,16 @@ function updateLanguageUI() {
       langThBtn.className = "px-2.5 py-1 text-xs font-medium rounded text-emerald-200 hover:text-white transition";
     }
   }
+
+  const modeTip = document.getElementById("mode-tip-text");
+  if (modeTip) {
+    modeTip.textContent = state.dashboardMode === "advanced" ? t("modeAdvancedTip") : t("modeSimplifyTip");
+  }
+
+  if (state.view === "dashboard" && state.aggregatedResults && state.dashboardMode === "simplified") {
+    renderSimplifiedInsights();
+    renderSimplifiedAgeTable();
+  }
 }
 
 function bindEvents() {
@@ -254,6 +265,13 @@ function bindEvents() {
   document.getElementById("btn-edit-mapping")?.addEventListener("click", () => {
     state.view = "mapping";
     renderApp();
+  });
+
+  document.getElementById("btn-mode-simplify")?.addEventListener("click", () => {
+    setDashboardMode("simplified");
+  });
+  document.getElementById("btn-mode-advanced")?.addEventListener("click", () => {
+    setDashboardMode("advanced");
   });
   document.getElementById("btn-export-csv")?.addEventListener("click", () => {
     if (state.processedDataset) {
@@ -608,14 +626,263 @@ export function renderDashboardPanels() {
   renderActiveModelBadge();
   renderKPICards();
   renderMainTimeSeriesChart();
-  renderAgeGroupSmallMultiples();
-  renderSexChart();
-  renderAgeSexTables();
-  renderICDCompositionChart();
-  renderJVsNonJChart();
-  renderSeasonalPanel();
-  renderDemographicsPanel();
-  renderFooterMetadata();
+
+  if (state.dashboardMode === "simplified") {
+    renderSimplifiedInsights();
+    renderSimplifiedAgeTable();
+  } else {
+    renderAgeGroupSmallMultiples();
+    renderSexChart();
+    renderAgeSexTables();
+    renderICDCompositionChart();
+    renderJVsNonJChart();
+    renderSeasonalPanel();
+    renderDemographicsPanel();
+    renderFooterMetadata();
+  }
+
+  applyDashboardModeLayout(state.dashboardMode || "simplified");
+}
+
+function applyDashboardModeLayout(mode) {
+  const isSimplify = mode === "simplified";
+
+  const btnSimp = document.getElementById("btn-mode-simplify");
+  const btnAdv = document.getElementById("btn-mode-advanced");
+  const modeTip = document.getElementById("mode-tip-text");
+  const kpiGrid = document.getElementById("kpi-cards-grid");
+
+  if (btnSimp && btnAdv) {
+    if (isSimplify) {
+      btnSimp.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 bg-emerald-700 text-white shadow-xs";
+      btnAdv.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900";
+    } else {
+      btnAdv.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 bg-emerald-700 text-white shadow-xs";
+      btnSimp.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900";
+    }
+  }
+
+  if (modeTip) {
+    modeTip.textContent = isSimplify ? t("modeSimplifyTip") : t("modeAdvancedTip");
+  }
+
+  document.querySelectorAll(".dashboard-simplified-only").forEach((el) => {
+    el.classList.toggle("hidden", !isSimplify);
+  });
+
+  document.querySelectorAll(".dashboard-advanced-only").forEach((el) => {
+    el.classList.toggle("hidden", isSimplify);
+  });
+
+  if (kpiGrid) {
+    if (isSimplify) {
+      kpiGrid.classList.remove("lg:grid-cols-6");
+      kpiGrid.classList.add("lg:grid-cols-4");
+    } else {
+      kpiGrid.classList.remove("lg:grid-cols-4");
+      kpiGrid.classList.add("lg:grid-cols-6");
+    }
+  }
+
+  setTimeout(() => {
+    if (state.activeCharts.main && typeof state.activeCharts.main.resize === "function") {
+      state.activeCharts.main.resize();
+    }
+  }, 50);
+}
+
+export function setDashboardMode(mode) {
+  state.dashboardMode = mode;
+  applyDashboardModeLayout(mode);
+
+  if (state.aggregatedResults) {
+    if (mode === "simplified") {
+      renderSimplifiedInsights();
+      renderSimplifiedAgeTable();
+    } else {
+      renderAgeGroupSmallMultiples();
+      renderSexChart();
+      renderAgeSexTables();
+      renderICDCompositionChart();
+      renderJVsNonJChart();
+      renderSeasonalPanel();
+      renderDemographicsPanel();
+      renderFooterMetadata();
+    }
+  }
+}
+
+function renderSimplifiedInsights() {
+  if (!state.aggregatedResults) return;
+
+  const k = state.aggregatedResults.kpis;
+  const ageSummary = state.aggregatedResults.ageGroupsSummary || [];
+  const isTh = state.lang === "th";
+  const ratePer100 = k.eligibleAdmissions > 0 ? (k.estimatedSARITotal / k.eligibleAdmissions) * 100 : 0;
+
+  // Insight 1: SARI Burden & Overall Rate
+  const insight1El = document.getElementById("simplified-insight-1");
+  if (insight1El) {
+    if (isTh) {
+      insight1El.innerHTML = `
+        พบผู้ป่วยประมาณการ SARI ทั้งหมด <strong class="text-white text-base">${k.estimatedSARITotal.toFixed(1)}</strong> ราย 
+        คิดเป็นอัตราความชุก <strong class="text-emerald-200 text-base">${ratePer100.toFixed(1)} ต่อ 100 การรับรักษา</strong> 
+        ที่เข้าเกณฑ์แบบจำลองการศึกษา (${k.eligibleAdmissions.toLocaleString()} ราย จากทั้งหมด ${k.totalUploaded.toLocaleString()} ราย) 
+        สะท้อนภาระโรคทางเดินหายใจเฉียบพลันรุนแรงที่แท้จริงในพื้นที่
+      `;
+    } else {
+      insight1El.innerHTML = `
+        Estimated <strong class="text-white text-base">${k.estimatedSARITotal.toFixed(1)}</strong> total SARI cases, 
+        representing an overall rate of <strong class="text-emerald-200 text-base">${ratePer100.toFixed(1)} per 100 eligible admissions</strong> 
+        (${k.eligibleAdmissions.toLocaleString()} study-eligible of ${k.totalUploaded.toLocaleString()} total admissions). 
+        Captures the true facility burden beyond routine diagnostic coding.
+      `;
+    }
+  }
+
+  // Insight 2: Non-J Diagnoses Impact
+  const insight2El = document.getElementById("simplified-insight-2");
+  if (insight2El) {
+    const nonJPct = k.pctEstimatedSARIFromNonJ || 0;
+    const nonJCases = k.estimatedSARINonJCode || 0;
+    const ratioApprox = nonJPct > 0 ? Math.round(100 / nonJPct) : 0;
+    const ratioTextTh = ratioApprox > 0 ? `(เกือบ 1 ในทุกๆ ${ratioApprox} ราย)` : "";
+    const ratioTextEn = ratioApprox > 0 ? `(~1 in every ${ratioApprox} cases)` : "";
+
+    if (isTh) {
+      insight2El.innerHTML = `
+        ผู้ป่วย SARI ถึง <strong class="text-teal-200 text-base">${nonJPct.toFixed(1)}%</strong> (${nonJCases.toFixed(1)} ราย) 
+        ${ratioTextTh} ได้รับการวินิจฉัยหลักด้วย <strong class="text-white">รหัสโรคนอกกลุ่ม J</strong> 
+        (เช่น Sepsis, ไข้ไม่ทราบสาเหตุ หรือโรคระบบไหลเวียนโลหิต) 
+        การเฝ้าระวังเฉพาะกลุ่มรหัส J เพียงอย่างเดียวจะทำให้พลาดผู้ป่วย SARI จำนวนมาก
+      `;
+    } else {
+      insight2El.innerHTML = `
+        <strong class="text-teal-200 text-base">${nonJPct.toFixed(1)}%</strong> (${nonJCases.toFixed(1)} cases) 
+        ${ratioTextEn} of estimated SARI patients presented under <strong class="text-white">non-J ICD-10 diagnostic codes</strong> 
+        (such as sepsis, pyrexia, or circulatory disease). Relying solely on J-codes misses a critical fraction of SARI admissions.
+      `;
+    }
+  }
+
+  // Insight 3: Vulnerable Cohorts
+  const insight3El = document.getElementById("simplified-insight-3");
+  if (insight3El) {
+    if (ageSummary.length > 0) {
+      const sortedBySARI = [...ageSummary].sort((a, b) => b.estimatedSARI - a.estimatedSARI);
+      const topBurden = sortedBySARI[0];
+
+      const sortedByRate = [...ageSummary].map((g) => ({
+        ...g,
+        rate: g.eligibleAdmissions > 0 ? (g.estimatedSARI / g.eligibleAdmissions) * 100 : 0
+      })).sort((a, b) => b.rate - a.rate);
+      const topRate = sortedByRate[0];
+
+      const topBurdenLabel = isTh ? topBurden.labelTh : topBurden.labelEn;
+      const topRateLabel = isTh ? topRate.labelTh : topRate.labelEn;
+
+      if (isTh) {
+        insight3El.innerHTML = `
+          กลุ่มอายุที่มีภาระโรค SARI สูงสุดคือ <strong class="text-amber-200 text-base">${topBurdenLabel}</strong> 
+          (${topBurden.estimatedSARI.toFixed(1)} ราย, ${topBurden.estimatedSARIPct.toFixed(1)}% ของ SARI ทั้งหมด) 
+          และกลุ่มที่มีอัตราป่วยสูงสุดคือ <strong class="text-amber-200 text-base">${topRateLabel}</strong> 
+          (${topRate.rate.toFixed(1)} ต่อ 100 การรับรักษา) 
+          เป็นกลุ่มเป้าหมายลำดับแรกในการจัดสรรเตียงและวัคซีน
+        `;
+      } else {
+        insight3El.innerHTML = `
+          Highest volume burden is concentrated in age <strong class="text-amber-200 text-base">${topBurdenLabel}</strong> 
+          (${topBurden.estimatedSARI.toFixed(1)} cases, ${topBurden.estimatedSARIPct.toFixed(1)}% of total SARI), 
+          while highest clinical rate is in <strong class="text-amber-200 text-base">${topRateLabel}</strong> 
+          (${topRate.rate.toFixed(1)} per 100 admissions), prioritizing these cohorts for preventive interventions.
+        `;
+      }
+    } else {
+      insight3El.textContent = isTh ? "ไม่มีข้อมูลกลุ่มอายุ" : "No age-group distribution available";
+    }
+  }
+}
+
+function renderSimplifiedAgeTable() {
+  const container = document.getElementById("simplified-age-table-container");
+  if (!container || !state.aggregatedResults) return;
+
+  const ageSummary = state.aggregatedResults.ageGroupsSummary || [];
+  const isTh = state.lang === "th";
+  const k = state.aggregatedResults.kpis;
+
+  let maxRate = 0;
+  ageSummary.forEach((g) => {
+    const rate = g.eligibleAdmissions > 0 ? (g.estimatedSARI / g.eligibleAdmissions) * 100 : 0;
+    if (rate > maxRate) maxRate = rate;
+  });
+  if (maxRate <= 0) maxRate = 1;
+
+  const rows = ageSummary.map((g) => {
+    const ratePer100 = g.eligibleAdmissions > 0 ? (g.estimatedSARI / g.eligibleAdmissions) * 100 : 0;
+    const barPct = Math.min(100, Math.round((ratePer100 / maxRate) * 100));
+    const label = isTh ? g.labelTh : g.labelEn;
+
+    return `
+      <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+        <td class="py-3 px-4 font-bold text-slate-800 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+          <span>${label}</span>
+        </td>
+        <td class="py-3 px-4 text-right font-medium text-slate-700">
+          ${g.eligibleAdmissions.toLocaleString()} 
+          <span class="text-xs text-slate-400">(${g.eligiblePct.toFixed(1)}%)</span>
+        </td>
+        <td class="py-3 px-4 text-right font-bold text-emerald-800">
+          ${g.estimatedSARI.toFixed(1)}
+          <span class="text-xs text-emerald-600/70 font-normal">(${g.estimatedSARIPct.toFixed(1)}%)</span>
+        </td>
+        <td class="py-3 px-4 text-right">
+          <div class="flex items-center justify-end gap-3">
+            <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200 hidden sm:block">
+              <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full" style="width: ${barPct}%"></div>
+            </div>
+            <span class="font-bold text-slate-900 font-mono text-sm w-12 text-right">${ratePer100.toFixed(1)}</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  const overallRate = k.eligibleAdmissions > 0 ? (k.estimatedSARITotal / k.eligibleAdmissions) * 100 : 0;
+
+  const html = `
+    <table class="w-full text-left border-collapse text-sm">
+      <thead>
+        <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+          <th class="py-3 px-4 uppercase tracking-wider text-xs">${t("colAgeGroup")}</th>
+          <th class="py-3 px-4 text-right uppercase tracking-wider text-xs">${t("colEligibleAdmissionsShort")}</th>
+          <th class="py-3 px-4 text-right uppercase tracking-wider text-xs">${t("colEstimatedSARIShort")}</th>
+          <th class="py-3 px-4 text-right uppercase tracking-wider text-xs">${t("colRatePer100")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+      <tfoot>
+        <tr class="bg-emerald-50/80 font-bold text-emerald-950 border-t-2 border-emerald-500">
+          <td class="py-3.5 px-4">${isTh ? "รวมทั้งหมด (Total Eligible)" : "Total (All Ages)"}</td>
+          <td class="py-3.5 px-4 text-right">${k.eligibleAdmissions.toLocaleString()} (100.0%)</td>
+          <td class="py-3.5 px-4 text-right text-emerald-800 font-black">${k.estimatedSARITotal.toFixed(1)} (100.0%)</td>
+          <td class="py-3.5 px-4 text-right">
+            <div class="flex items-center justify-end gap-3">
+              <div class="w-24 bg-emerald-200/60 rounded-full h-2 overflow-hidden hidden sm:block">
+                <div class="bg-emerald-700 h-2 rounded-full" style="width: ${Math.min(100, Math.round((overallRate / maxRate) * 100))}%"></div>
+              </div>
+              <span class="font-black text-emerald-950 font-mono text-sm w-12 text-right">${overallRate.toFixed(1)}</span>
+            </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+
+  container.innerHTML = html;
 }
 
 function renderActiveModelBadge() {
@@ -1781,6 +2048,10 @@ function openSurveillanceReport() {
       </div>
     `;
   }
+
+  // If in simplified mode, advanced charts might not be rendered yet; render them so canvas snapshots exist
+  if (!state.activeCharts.icd) renderICDCompositionChart();
+  if (!state.activeCharts.jVsNonJ) renderJVsNonJChart();
 
   // Capture Canvas Images with crisp white background
   const mainImgUrl = getCanvasDataURL(document.getElementById("chart-main-timeseries"));

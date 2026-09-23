@@ -384,6 +384,28 @@ async function runTests() {
     assert(imgBlob.size > baseBlob.size, `Word with images (${imgBlob.size}B) must be larger than without (${baseBlob.size}B)`);
   });
 
+  console.log("\n[8] Testing Dashboard Modes & Translations:");
+
+  await test("Simplified and Advanced translations exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const requiredKeys = [
+      "modeToggleLabel", "modeSimplify", "modeAdvanced", "modeSimplifyTip", "modeAdvancedTip",
+      "executiveInsightsTitle", "executiveInsightsSub", "ageSummaryTableTitle", "ageSummaryTableSub",
+      "takeaway1Title", "takeaway2Title", "takeaway3Title",
+      "colAgeGroup", "colEligibleAdmissionsShort", "colEstimatedSARIShort", "colRatePer100"
+    ];
+    for (const key of requiredKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("App exports state with default dashboardMode === 'simplified'", async () => {
+    const { state } = await import("../src/app.js");
+    assert.strictEqual(state.dashboardMode, "simplified");
+  });
+
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

@@ -59,9 +59,51 @@
   <script src="./src/docx.umd.js"></script>
 
   <style>
+    html {
+      font-size: 16px;
+    }
     body {
       font-family: 'Sarabun', 'Inter', sans-serif;
+      font-size: 15.5px;
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+    }
+    /* Typography scale enhancement for superior Thai & English readability */
+    .text-\[10px\] {
+      font-size: 0.75rem !important; /* 12px */
+      line-height: 1.15rem !important;
+    }
+    .text-\[11px\] {
+      font-size: 0.8125rem !important; /* 13px */
+      line-height: 1.25rem !important;
+    }
+    .text-xs {
+      font-size: 0.875rem !important; /* 14px */
+      line-height: 1.35rem !important;
+    }
+    .text-sm {
+      font-size: 1rem !important; /* 16px */
+      line-height: 1.55rem !important;
+    }
+    .text-base {
+      font-size: 1.125rem !important; /* 18px */
+      line-height: 1.65rem !important;
+    }
+    .text-lg {
+      font-size: 1.25rem !important; /* 20px */
+      line-height: 1.75rem !important;
+    }
+    .text-xl {
+      font-size: 1.45rem !important; /* 23px */
+      line-height: 1.95rem !important;
+    }
+    .text-2xl {
+      font-size: 1.75rem !important; /* 28px */
+      line-height: 2.15rem !important;
+    }
+    .text-3xl {
+      font-size: 2.25rem !important; /* 36px */
+      line-height: 2.55rem !important;
     }
     @media print {
       @page {
@@ -450,62 +492,69 @@
     <!-- VIEW 3: FULL DASHBOARD -->
     <div id="view-dashboard" class="hidden space-y-6">
 
-      <!-- Active Model Notification & Action Bar -->
-      <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <!-- Dashboard Top Banner: View Mode Switcher & Quick Actions -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         
-        <!-- Active Model Badge & Tooltip -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid fa-calculator"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide" data-i18n="activeModelBadge">Model Used:</span>
-              <span id="active-model-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                Model 2 (ICD-10 + age + sex + season)
-              </span>
+        <!-- Left: Mode Switcher & Description -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5" data-i18n="modeToggleLabel">
+              <i class="fa-solid fa-layer-group text-emerald-700"></i>
+              โหมดการแสดงผล:
+            </span>
+            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-300 shadow-inner">
+              <button id="btn-mode-simplify" class="px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 shadow-xs bg-emerald-700 text-white" title="โหมดเข้าใจง่าย (Simplified)">
+                <i class="fa-solid fa-wand-magic-sparkles text-emerald-300"></i>
+                <span data-i18n="modeSimplify">Simplified Version</span>
+              </button>
+              <button id="btn-mode-advanced" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900" title="โหมดวิเคราะห์เชิงลึก (Advanced)">
+                <i class="fa-solid fa-microscope text-slate-400"></i>
+                <span data-i18n="modeAdvanced">Advanced Mode</span>
+              </button>
             </div>
-            <p id="active-model-desc" class="text-[11px] text-slate-400 mt-0.5">
-              Model 2 applied to rows with complete age, sex, and season; Model 1 applied to other eligible records.
-            </p>
           </div>
+
+          <span id="mode-tip-badge" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200/80">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <span id="mode-tip-text" data-i18n="modeSimplifyTip">สรุปตัวชี้วัดหลัก กราฟแนวโน้ม และประเด็นสำคัญสำหรับผู้บริหาร</span>
+          </span>
         </div>
 
-        <!-- Dashboard Action Buttons -->
+        <!-- Right: Action Buttons -->
         <div class="flex flex-wrap items-center gap-2">
           
           <!-- Data Quality Modal Button -->
-          <button id="btn-data-quality" class="px-3 py-1.5 text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg transition flex items-center gap-1.5 shadow-xs">
+          <button id="btn-data-quality" class="px-3.5 py-2 text-sm font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg transition flex items-center gap-1.5 shadow-xs">
             <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
             <span data-i18n="qualityAuditTitle">Data Quality</span>
           </button>
 
           <!-- Edit Mapping -->
-          <button id="btn-edit-mapping" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
+          <button id="btn-edit-mapping" class="px-3.5 py-2 text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
             <i class="fa-solid fa-sliders"></i>
             <span data-i18n="backToMappingBtn">Edit Mapping</span>
           </button>
 
           <!-- Upload New Data -->
-          <button id="btn-upload-new" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
+          <button id="btn-upload-new" class="px-3.5 py-2 text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition flex items-center gap-1.5">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
             <span>Upload New</span>
           </button>
 
           <!-- Export Excel Workbook -->
-          <button id="btn-export-excel" class="px-3 py-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="10-Sheet Comprehensive Excel Workbook">
+          <button id="btn-export-excel" class="px-3.5 py-2 text-sm font-bold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="10-Sheet Comprehensive Excel Workbook">
             <i class="fa-solid fa-file-excel"></i>
             <span>Excel (.xlsx)</span>
           </button>
 
           <!-- Export Processed CSV -->
-          <button id="btn-export-csv" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="Row-Level Processed Data with Linear Predictors and Probabilities">
+          <button id="btn-export-csv" class="px-3.5 py-2 text-sm font-bold bg-slate-800 hover:bg-slate-700 text-white rounded-lg shadow-xs transition flex items-center gap-1.5" title="Row-Level Processed Data with Linear Predictors and Probabilities">
             <i class="fa-solid fa-file-csv"></i>
             <span>CSV</span>
           </button>
 
           <!-- Generate Printable Report -->
-          <button id="btn-generate-report" class="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg shadow-md transition flex items-center gap-1.5">
+          <button id="btn-generate-report" class="px-4 py-2 text-sm font-bold bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg shadow-md transition flex items-center gap-2">
             <i class="fa-solid fa-file-invoice"></i>
             <span data-i18n="downloadReportBtn">Surveillance Report</span>
           </button>
@@ -513,84 +562,174 @@
         </div>
       </div>
 
-      <!-- KPI SUMMARY CARDS (Top Row of 6 Cards) -->
-      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+      <!-- Active Model Info Bar -->
+      <div id="active-model-bar" class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wide" data-i18n="activeModelBadge">Model Used:</span>
+              <span id="active-model-badge" class="px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                Model 2 (ICD-10 + age + sex + season)
+              </span>
+            </div>
+            <p id="active-model-desc" class="text-xs text-slate-500 mt-0.5">
+              Model 2 applied to rows with complete age, sex, and season; Model 1 applied to other eligible records.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI SUMMARY CARDS -->
+      <div id="kpi-cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         
         <!-- Card 1: Total Uploaded -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiTotalUploaded">
+        <div id="kpi-card-total" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiTotalUploaded">
             Total Admissions
           </span>
-          <div class="mt-2">
-            <div id="kpi-total-val" class="text-2xl font-extrabold text-slate-900 font-mono tracking-tight">-</div>
-            <div id="kpi-total-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-total-val" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">-</div>
+            <div id="kpi-total-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
         <!-- Card 2: Eligible Admissions -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiEligibleAdmissions">
+        <div id="kpi-card-eligible" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiEligibleAdmissions">
             Study-Eligible
           </span>
-          <div class="mt-2">
-            <div id="kpi-eligible-val" class="text-2xl font-extrabold text-slate-800 font-mono tracking-tight">-</div>
-            <div id="kpi-eligible-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-eligible-val" class="text-2xl sm:text-3xl font-black text-slate-800 font-mono tracking-tight">-</div>
+            <div id="kpi-eligible-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
         <!-- Card 3: Estimated SARI (DDC Emerald Hero KPI Card) -->
-        <div class="bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 rounded-xl border-2 border-emerald-500/80 shadow-xs flex flex-col justify-between relative overflow-hidden">
+        <div id="kpi-card-sari" class="bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 shadow-xs flex flex-col justify-between relative overflow-hidden">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-emerald-950 uppercase tracking-wide" data-i18n="kpiEstimatedSARI">
+            <span class="text-xs sm:text-sm font-black text-emerald-950 uppercase tracking-wide" data-i18n="kpiEstimatedSARI">
               Estimated SARI
             </span>
-            <i class="fa-solid fa-lungs-virus text-emerald-600 text-sm"></i>
+            <i class="fa-solid fa-lungs-virus text-emerald-600 text-base sm:text-lg"></i>
           </div>
-          <div class="mt-2">
-            <div id="kpi-sari-val" class="text-2xl font-black text-emerald-700 font-mono tracking-tight">-</div>
-            <div id="kpi-sari-sub" class="text-[11px] font-semibold text-emerald-800/80 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-sari-val" class="text-2xl sm:text-3xl font-black text-emerald-700 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-sub" class="text-xs sm:text-sm font-bold text-emerald-800/80 mt-0.5 truncate">-</div>
           </div>
         </div>
 
-        <!-- Card 4: Study J-codes -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiStudyJCodes">
+        <!-- Card 4: Study J-codes (Advanced Only) -->
+        <div id="kpi-card-jcodes" class="dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiStudyJCodes">
             Study J-codes
           </span>
-          <div class="mt-2">
-            <div id="kpi-jcodes-val" class="text-2xl font-extrabold text-blue-600 font-mono tracking-tight">-</div>
-            <div id="kpi-jcodes-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-jcodes-val" class="text-2xl sm:text-3xl font-black text-blue-600 font-mono tracking-tight">-</div>
+            <div id="kpi-jcodes-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
-        <!-- Card 5: Estimated SARI from J-codes -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromJ">
+        <!-- Card 5: Estimated SARI from J-codes (Advanced Only) -->
+        <div id="kpi-card-sari-j" class="dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromJ">
             SARI from J-codes
           </span>
-          <div class="mt-2">
-            <div id="kpi-sari-j-val" class="text-2xl font-extrabold text-slate-800 font-mono tracking-tight">-</div>
-            <div id="kpi-sari-j-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-sari-j-val" class="text-2xl sm:text-3xl font-black text-slate-800 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
         <!-- Card 6: Estimated SARI from Non-J -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromNonJ">
+        <div id="kpi-card-sari-nonj" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <span class="text-xs sm:text-sm font-bold text-teal-800 uppercase tracking-wide truncate" data-i18n="kpiSARIFromNonJ">
             SARI from Non-J
           </span>
-          <div class="mt-2">
-            <div id="kpi-sari-nonj-val" class="text-2xl font-extrabold text-teal-700 font-mono tracking-tight">-</div>
-            <div id="kpi-sari-nonj-sub" class="text-[11px] text-slate-500 mt-0.5 truncate">-</div>
+          <div class="mt-2 sm:mt-3">
+            <div id="kpi-sari-nonj-val" class="text-2xl sm:text-3xl font-black text-teal-700 font-mono tracking-tight">-</div>
+            <div id="kpi-sari-nonj-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
       </div>
 
-      <!-- GLOBAL FILTERS TOOLBAR -->
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <!-- SIMPLIFIED MODE: EXECUTIVE INSIGHTS & TAKEAWAYS -->
+      <div id="simplified-insights-card" class="dashboard-simplified-only bg-gradient-to-br from-emerald-950 via-[#064e3b] to-[#043825] text-white p-6 sm:p-7 rounded-2xl shadow-md border border-emerald-600/30">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-xs flex items-center justify-center text-emerald-300 text-lg border border-white/20">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-white tracking-tight" data-i18n="executiveInsightsTitle">
+              บทสรุปสถานการณ์และประเด็นสำคัญสำหรับผู้บริหาร (Executive Insights)
+            </h3>
+            <p class="text-xs sm:text-sm text-emerald-200/90" data-i18n="executiveInsightsSub">
+              ข้อค้นพบสำคัญจากแบบจำลองการประมาณการ SARI เพื่อประกอบการตัดสินใจเชิงนโยบายและการบริหารจัดการ
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+          <!-- Bullet 1: Burden -->
+          <div class="bg-white/10 backdrop-blur-xs p-4 rounded-xl border border-white/15 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-emerald-300 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-lungs"></i>
+              <span data-i18n="takeaway1Title">ภาระโรค SARI และอัตราประมาณการ</span>
+            </div>
+            <div id="simplified-insight-1" class="text-xs sm:text-sm text-emerald-50 leading-relaxed font-medium">
+              กำลังประมวลผลข้อมูล...
+            </div>
+          </div>
+
+          <!-- Bullet 2: Non-J Impact -->
+          <div class="bg-white/10 backdrop-blur-xs p-4 rounded-xl border border-white/15 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-teal-300 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span data-i18n="takeaway2Title">ความสำคัญของรหัสโรคนอกกลุ่ม J</span>
+            </div>
+            <div id="simplified-insight-2" class="text-xs sm:text-sm text-emerald-50 leading-relaxed font-medium">
+              กำลังประมวลผลข้อมูล...
+            </div>
+          </div>
+
+          <!-- Bullet 3: Vulnerable Groups -->
+          <div class="bg-white/10 backdrop-blur-xs p-4 rounded-xl border border-white/15 flex flex-col justify-between">
+            <div class="flex items-center gap-2 text-amber-300 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-users-viewfinder"></i>
+              <span data-i18n="takeaway3Title">กลุ่มประชากรเปราะบางสูง</span>
+            </div>
+            <div id="simplified-insight-3" class="text-xs sm:text-sm text-emerald-50 leading-relaxed font-medium">
+              กำลังประมวลผลข้อมูล...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMPLIFIED MODE: AGE-GROUP SUMMARY TABLE -->
+      <div id="simplified-age-summary-card" class="dashboard-simplified-only bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900" data-i18n="ageSummaryTableTitle">
+              สรุปการกระจายตัวของผู้ป่วย SARI ตาม 6 กลุ่มอายุ (Age-Group Summary)
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-500" data-i18n="ageSummaryTableSub">
+              แสดงจำนวนการรับรักษาเข้าเกณฑ์ การประมาณการ SARI และอัตราความชุกต่อ 100 การรับรักษา
+            </p>
+          </div>
+          <span class="text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
+            6 Epidemiological Age Strata
+          </span>
+        </div>
+        <div id="simplified-age-table-container" class="overflow-x-auto"></div>
+      </div>
+
+      <!-- GLOBAL FILTERS TOOLBAR (Advanced Mode Only) -->
+      <div id="advanced-filters-toolbar" class="dashboard-advanced-only hidden bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <span class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+          <span class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
             <i class="fa-solid fa-filter text-emerald-700"></i>
             <span data-i18n="filtersHeader">Global Filters</span>
           </span>
@@ -666,13 +805,13 @@
       </div>
 
       <!-- MAIN TIME SERIES CHART -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div id="main-trend-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 class="text-base font-bold text-slate-900" data-i18n="mainTrendTitle">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900" data-i18n="mainTrendTitle">
               SARI Surveillance Trends Over Time
             </h3>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs sm:text-sm text-slate-500">
               Eligible ICD admissions (Gray), Study J-codes (Blue), and Estimated SARI (Emerald)
             </p>
           </div>
@@ -680,16 +819,16 @@
           <div class="flex items-center gap-2">
             <!-- Weekly / Monthly Toggle -->
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-              <button id="toggle-weekly" class="px-3 py-1 text-xs font-bold rounded bg-emerald-700 text-white" data-i18n="aggregationToggleWeekly">
+              <button id="toggle-weekly" class="px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded bg-emerald-700 text-white" data-i18n="aggregationToggleWeekly">
                 Weekly
               </button>
-              <button id="toggle-monthly" class="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900" data-i18n="aggregationToggleMonthly">
+              <button id="toggle-monthly" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900" data-i18n="aggregationToggleMonthly">
                 Monthly
               </button>
             </div>
 
             <!-- Export PNG -->
-            <button id="btn-export-main-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1">
+            <button id="btn-export-main-png" class="px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1.5">
               <i class="fa-solid fa-download"></i>
               <span>PNG</span>
             </button>
@@ -697,24 +836,24 @@
         </div>
 
         <!-- Series Visibility Toggles (Choose how many and which lines to show) -->
-        <div class="flex flex-wrap items-center gap-2 sm:gap-4 pb-3 mb-3 border-b border-slate-100 text-xs">
-          <span class="font-medium text-slate-500 flex items-center gap-1.5" data-i18n="selectLinesLabel">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4 pb-3 mb-3 border-b border-slate-100 text-xs sm:text-sm">
+          <span class="font-bold text-slate-600 flex items-center gap-1.5" data-i18n="selectLinesLabel">
             <i class="fa-solid fa-layer-group text-slate-400"></i>
             Display Lines:
           </span>
-          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 transition select-none">
-            <input type="checkbox" id="toggle-line-eligible" checked class="rounded border-slate-300 text-slate-600 focus:ring-slate-500 h-3.5 w-3.5 cursor-pointer">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block"></span>
-            <span class="font-medium text-slate-700" data-i18n="lineEligibleLabel">Eligible Admissions</span>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition select-none">
+            <input type="checkbox" id="toggle-line-eligible" checked class="rounded border-slate-300 text-slate-600 focus:ring-slate-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-slate-500 inline-block"></span>
+            <span class="font-semibold text-slate-700" data-i18n="lineEligibleLabel">Eligible Admissions</span>
           </label>
-          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-blue-50/60 hover:bg-blue-100/60 px-2.5 py-1 rounded-md border border-blue-200 transition select-none">
-            <input type="checkbox" id="toggle-line-jcodes" checked class="rounded border-blue-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer">
-            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
-            <span class="font-medium text-blue-900" data-i18n="lineJCodesLabel">Study J-codes</span>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-blue-50/60 hover:bg-blue-100/60 px-3 py-1.5 rounded-lg border border-blue-200 transition select-none">
+            <input type="checkbox" id="toggle-line-jcodes" checked class="rounded border-blue-300 text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+            <span class="font-semibold text-blue-900" data-i18n="lineJCodesLabel">Study J-codes</span>
           </label>
-          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-emerald-50/80 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-300 transition select-none">
-            <input type="checkbox" id="toggle-line-sari" checked class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5 cursor-pointer">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-emerald-50/80 hover:bg-emerald-100/80 px-3 py-1.5 rounded-lg border border-emerald-300 transition select-none">
+            <input type="checkbox" id="toggle-line-sari" checked class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
             <span class="font-bold text-emerald-950" data-i18n="lineSARILabel">Estimated SARI</span>
           </label>
         </div>
@@ -724,19 +863,19 @@
         </div>
       </div>
 
-      <!-- AGE GROUP SMALL MULTIPLES (2 x 3 GRID) -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <!-- AGE GROUP SMALL MULTIPLES (Advanced Only) -->
+      <div id="age-small-multiples-card" class="dashboard-advanced-only hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 class="text-base font-bold text-slate-900" data-i18n="smallMultiplesTitle">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900" data-i18n="smallMultiplesTitle">
               Estimated SARI by Age Group
             </h3>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs sm:text-sm text-slate-500">
               Small multiples across 6 epidemiological age strata (<2, 2–4, 5–14, 15–49, 50–64, ≥65 years)
             </p>
           </div>
 
-          <div class="flex items-center gap-4 text-xs">
+          <div class="flex items-center gap-4 text-xs sm:text-sm">
             <label class="flex items-center gap-1.5 cursor-pointer text-slate-600">
               <input type="checkbox" id="toggle-shared-y" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
               <span data-i18n="yAxisShared">Shared Y-axis</span>
@@ -751,23 +890,23 @@
         <div id="age-small-multiples-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
       </div>
 
-      <!-- TWO COLUMNS: SEX STRATIFIED & J VS NON-J CONTRIBUTION -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- TWO COLUMNS: SEX STRATIFIED & J VS NON-J CONTRIBUTION (Advanced Only) -->
+      <div id="sex-and-j-card" class="dashboard-advanced-only hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Sex Trends -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div class="flex items-center justify-between mb-3">
             <div>
-              <h3 class="text-sm font-bold text-slate-900" data-i18n="sexTrendsTitle">
+              <h3 class="text-base font-bold text-slate-900" data-i18n="sexTrendsTitle">
                 Estimated SARI by Sex
               </h3>
-              <p class="text-[11px] text-slate-500">Male (Teal) vs Female (Emerald)</p>
+              <p class="text-xs text-slate-500">Male (Teal) vs Female (Emerald)</p>
             </div>
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-              <button id="toggle-sex-combined" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-700 text-white shadow-xs">
+              <button id="toggle-sex-combined" class="px-2.5 py-1 text-xs sm:text-sm font-bold rounded bg-emerald-700 text-white shadow-xs">
                 Combined
               </button>
-              <button id="toggle-sex-split" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900">
+              <button id="toggle-sex-split" class="px-2.5 py-1 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900">
                 Split
               </button>
             </div>
@@ -776,15 +915,15 @@
         </div>
 
         <!-- J vs Non-J Contribution -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div class="flex items-center justify-between mb-3">
             <div>
-              <h3 class="text-sm font-bold text-slate-900" data-i18n="jVsNonJTitle">
+              <h3 class="text-base font-bold text-slate-900" data-i18n="jVsNonJTitle">
                 Contribution of J-code and Non-J-code Diagnoses to Estimated SARI
               </h3>
-              <p class="text-[11px] text-slate-500">100% Stacked comparison of Admissions vs Estimated SARI</p>
+              <p class="text-xs text-slate-500">100% Stacked comparison of Admissions vs Estimated SARI</p>
             </div>
-            <button id="btn-export-j-non-j-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
+            <button id="btn-export-j-non-j-png" class="px-2.5 py-1 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
               <i class="fa-solid fa-download"></i>
             </button>
           </div>
@@ -795,27 +934,27 @@
 
       </div>
 
-      <!-- ICD-10 COMPOSITION HORIZONTAL BAR -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <!-- ICD-10 COMPOSITION HORIZONTAL BAR (Advanced Only) -->
+      <div id="icd-composition-card" class="dashboard-advanced-only hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 class="text-sm font-bold text-slate-900" data-i18n="icdCompositionTitle">
+            <h3 class="text-base font-bold text-slate-900" data-i18n="icdCompositionTitle">
               Eligible Admissions by ICD-10 Diagnostic Group
             </h3>
-            <p class="text-[11px] text-slate-500">
+            <p class="text-xs sm:text-sm text-slate-500">
               Ordered by frequency. Emerald: Study J-codes (URTI, Flu, Pneumonia, Other Resp). Slate: Other validated study codes.
             </p>
           </div>
           <div class="flex items-center gap-2">
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-              <button id="toggle-icd-admissions" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-700 text-white shadow-xs" data-i18n="metricAdmissions">
+              <button id="toggle-icd-admissions" class="px-3 py-1.5 text-xs sm:text-sm font-bold rounded bg-emerald-700 text-white shadow-xs" data-i18n="metricAdmissions">
                 Admissions
               </button>
-              <button id="toggle-icd-sari" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900" data-i18n="metricEstimatedSARI">
+              <button id="toggle-icd-sari" class="px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900" data-i18n="metricEstimatedSARI">
                 Estimated SARI
               </button>
             </div>
-            <button id="btn-export-icd-png" class="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
+            <button id="btn-export-icd-png" class="px-2.5 py-1 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg">
               <i class="fa-solid fa-download"></i>
             </button>
           </div>
@@ -825,20 +964,20 @@
         </div>
       </div>
 
-      <!-- AGE x SEX DESCRIPTIVE & SARI TABLES -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- AGE x SEX DESCRIPTIVE & SARI TABLES (Advanced Only) -->
+      <div id="age-sex-tables-card" class="dashboard-advanced-only hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Table 1: Admissions by Age Group and Sex -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between mb-3">
-            <h4 class="text-sm font-bold text-slate-900">
+            <h4 class="text-base font-bold text-slate-900">
               Admissions by Age Group and Sex
             </h4>
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-              <button id="toggle-pct-overall" class="px-2 py-0.5 text-[11px] font-bold rounded bg-emerald-700 text-white shadow-xs">
+              <button id="toggle-pct-overall" class="px-2.5 py-1 text-xs sm:text-sm font-bold rounded bg-emerald-700 text-white shadow-xs">
                 Overall %
               </button>
-              <button id="toggle-pct-row" class="px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:text-slate-900">
+              <button id="toggle-pct-row" class="px-2.5 py-1 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900">
                 Row %
               </button>
             </div>
@@ -847,12 +986,12 @@
         </div>
 
         <!-- Table 2: Estimated SARI by Age Group and Sex -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center justify-between mb-3">
-            <h4 class="text-sm font-bold text-slate-900">
+            <h4 class="text-base font-bold text-slate-900">
               Estimated SARI by Age Group and Sex
             </h4>
-            <span class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-300">
+            <span class="text-xs sm:text-sm font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-300">
               Sum of probabilities
             </span>
           </div>
@@ -861,38 +1000,38 @@
 
       </div>
 
-      <!-- SEASONAL ANALYSIS & SUMMARY DEMOGRAPHICS -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- SEASONAL ANALYSIS & SUMMARY DEMOGRAPHICS (Advanced Only) -->
+      <div id="seasonal-and-demog-card" class="dashboard-advanced-only hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Seasonal Analysis Table -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <h4 class="text-sm font-bold text-slate-900 mb-1" data-i18n="seasonalAnalysisTitle">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
+          <h4 class="text-base font-bold text-slate-900 mb-1" data-i18n="seasonalAnalysisTitle">
             SARI by Admission Season
           </h4>
-          <p class="text-[11px] text-slate-500 mb-3">
+          <p class="text-xs sm:text-sm text-slate-500 mb-3">
             Summer (Feb–May, Ref), Rainy (Jun–Oct), Winter (Nov–Jan). Descriptive analysis only.
           </p>
           <div id="seasonal-table-container" class="overflow-x-auto"></div>
         </div>
 
         <!-- Demographics Summary -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <h4 class="text-sm font-bold text-slate-900 mb-1" data-i18n="demographicsTitle">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs">
+          <h4 class="text-base font-bold text-slate-900 mb-1" data-i18n="demographicsTitle">
             Characteristics of Eligible Admissions
           </h4>
-          <p class="text-[11px] text-slate-500 mb-3">Key demographic indices across study-eligible admissions</p>
+          <p class="text-xs sm:text-sm text-slate-500 mb-3">Key demographic indices across study-eligible admissions</p>
           <div id="demographics-content-container"></div>
         </div>
 
       </div>
 
-      <!-- SCIENTIFIC INTERPRETATION & GENERALIZABILITY STATEMENTS -->
-      <div class="space-y-3">
+      <!-- SCIENTIFIC INTERPRETATION & GENERALIZABILITY STATEMENTS (Advanced Only) -->
+      <div id="scientific-notes-card" class="dashboard-advanced-only hidden space-y-3">
         <!-- Scientific Note -->
-        <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-4 text-xs text-emerald-950 flex items-start gap-3">
-          <i class="fa-solid fa-circle-info text-emerald-700 mt-0.5 text-sm flex-shrink-0"></i>
+        <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-5 text-sm text-emerald-950 flex items-start gap-3.5">
+          <i class="fa-solid fa-circle-info text-emerald-700 mt-0.5 text-base flex-shrink-0"></i>
           <div class="leading-relaxed">
-            <p class="font-semibold mb-1" data-i18n="interpretationNote">
+            <p class="font-bold mb-1" data-i18n="interpretationNote">
               Estimated SARI represents the sum of model-predicted probabilities and should be interpreted as an estimated case count rather than patient-level clinical diagnosis.
             </p>
             <p class="text-emerald-800" data-i18n="complementarySurveillanceNote">
@@ -902,10 +1041,10 @@
         </div>
 
         <!-- Generalizability Warning -->
-        <div class="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 text-xs text-amber-950 flex items-start gap-3">
-          <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-sm flex-shrink-0"></i>
+        <div class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-5 text-sm text-amber-950 flex items-start gap-3.5">
+          <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 text-base flex-shrink-0"></i>
           <div class="leading-relaxed">
-            <p class="font-semibold text-amber-900 mb-0.5">Scientific Generalizability Notice:</p>
+            <p class="font-bold text-amber-900 mb-0.5">Scientific Generalizability Notice:</p>
             <p class="text-amber-800" data-i18n="generalizabilityWarning">
               The underlying models were developed using data from six SARI sentinel hospitals in Thailand during 2023–2024. Model performance may change with differences in coding practices, patient populations, circulating pathogens, or healthcare utilization. Periodic local validation is recommended.
             </p>
@@ -913,8 +1052,8 @@
         </div>
       </div>
 
-      <!-- FOOTER METADATA -->
-      <div id="analysis-metadata-footer"></div>
+      <!-- FOOTER METADATA (Advanced Only) -->
+      <div id="analysis-metadata-footer" class="dashboard-advanced-only hidden"></div>
 
     </div>
 
