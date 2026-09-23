@@ -177,7 +177,15 @@ export const TRANSLATIONS = {
     reportGeneratedAt: "สร้างรายงานเมื่อ:",
     reportPrintInstruction: "กดปุ่ม พิมพ์รายงาน (หรือ Ctrl + P) เพื่อบันทึกเป็นเอกสาร PDF หรือพิมพ์ทางเครื่องพิมพ์",
     printBtn: "พิมพ์รายงาน / บันทึก PDF",
-    closeReportBtn: "ปิดหน้าต่างรายงาน"
+    closeReportBtn: "ปิดหน้าต่างรายงาน",
+    reportFacilityConfigTitle: "ชื่อหน่วยงานสำหรับแสดงในรายงาน",
+    reportFacilityConfigHelp: "ระบุชื่อโรงพยาบาลและจังหวัดเพื่อแสดงบนหัวรายงาน Word (.docx) และใบบันทึกผล",
+    optionalBadge: "ระบุหรือไม่ก็ได้ (Optional)",
+    facilityInputPlaceholder: "ชื่อโรงพยาบาล เช่น รพ.ศูนย์...",
+    provinceInputPlaceholder: "จังหวัด เช่น ขอนแก่น...",
+    facilitySectionTitle: "ข้อมูลหน่วยงานและสถานที่เฝ้าระวัง (Optional)",
+    facilitySectionSub: "ระบุชื่อโรงพยาบาลเพื่อใช้เป็นหัวเอกสารในการส่งออกรายงาน (หากไม่ระบุ ระบบจะใช้ชื่อกลาง)",
+    activeHospitalUnset: "โรงพยาบาล: (ยังไม่ระบุ - Optional)"
   },
 
   en: {
@@ -351,7 +359,15 @@ export const TRANSLATIONS = {
     reportGeneratedAt: "Report Generated:",
     reportPrintInstruction: "Use your browser print dialog (Ctrl + P) to print this surveillance bulletin or save it as a high-resolution PDF.",
     printBtn: "Print Report / Save PDF",
-    closeReportBtn: "Close Report"
+    closeReportBtn: "Close Report",
+    reportFacilityConfigTitle: "Hospital & Site Header for Report",
+    reportFacilityConfigHelp: "Specify hospital name and province to display on exported Word (.docx) and printable bulletins",
+    optionalBadge: "Optional",
+    facilityInputPlaceholder: "Hospital name (e.g., Regional Hospital...)",
+    provinceInputPlaceholder: "Province...",
+    facilitySectionTitle: "Hospital & Surveillance Site (Optional)",
+    facilitySectionSub: "Specify hospital name for export headers (defaults to sentinel site if left blank)",
+    activeHospitalUnset: "Facility: (Not specified - Optional)"
   }
 };
 

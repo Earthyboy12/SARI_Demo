@@ -405,6 +405,24 @@ async function runTests() {
     assert.strictEqual(state.dashboardMode, "simplified");
   });
 
+  await test("Facility metadata translation keys exist and updateHospitalInfo sets values properly", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const facilityKeys = [
+      "reportFacilityConfigTitle", "reportFacilityConfigHelp", "optionalBadge",
+      "facilityInputPlaceholder", "provinceInputPlaceholder",
+      "facilitySectionTitle", "facilitySectionSub", "activeHospitalUnset"
+    ];
+    for (const key of facilityKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+
+    const { state, updateHospitalInfo } = await import("../src/app.js");
+    updateHospitalInfo("Khon Kaen Hospital", "Khon Kaen");
+    assert.strictEqual(state.hospitalInfo.hospitalName, "Khon Kaen Hospital");
+    assert.strictEqual(state.hospitalInfo.province, "Khon Kaen");
+  });
+
 
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);

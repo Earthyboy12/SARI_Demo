@@ -260,19 +260,9 @@
           </div>
         </div>
 
-        <!-- Top Controls: Facility inputs, Language & Buttons -->
-        <div class="flex items-center gap-2">
+        <!-- Top Controls: Language & Buttons -->
+        <div class="flex items-center gap-2 flex-shrink-0">
           
-          <!-- Hospital Facility & Province Inputs -->
-          <div class="hidden xl:flex items-center gap-1.5 text-xs bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-700/60 shadow-inner">
-            <i class="fa-solid fa-hospital text-emerald-300"></i>
-            <input type="text" id="input-hospital-name" placeholder="Hospital name..." data-i18n-placeholder="reportFacilityLabel"
-              class="bg-transparent border-none text-emerald-100 placeholder-emerald-400/60 focus:outline-none w-32 text-xs">
-            <span class="text-emerald-700">|</span>
-            <input type="text" id="input-province" placeholder="Province..." data-i18n-placeholder="reportProvinceLabel"
-              class="bg-transparent border-none text-emerald-100 placeholder-emerald-400/60 focus:outline-none w-24 text-xs">
-          </div>
-
           <!-- Language Switcher -->
           <div class="flex items-center bg-emerald-950/80 p-0.5 rounded-lg border border-emerald-700/60">
             <button id="btn-lang-th" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white shadow-sm transition">
@@ -479,6 +469,34 @@
         </div>
       </div>
 
+      <!-- Facility & Reporting Information in Mapping (Optional) -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-hospital"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900" data-i18n="facilitySectionTitle">ข้อมูลหน่วยงานและสถานที่เฝ้าระวัง (Optional)</h3>
+          </div>
+          <span class="px-2.5 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200" data-i18n="optionalBadge">ระบุหรือไม่ก็ได้ (Optional)</span>
+        </div>
+        <p class="text-xs text-slate-500 mb-3" data-i18n="facilitySectionSub">
+          ระบุชื่อโรงพยาบาลและจังหวัดเพื่อแสดงบนหัวรายงานสรุปและไฟล์ Word (.docx) สำหรับนำเสนอผู้บริหาร (สามารถเว้นว่างไว้ได้)
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="reportFacilityLabel">ชื่อโรงพยาบาล / หน่วยบริการ</label>
+            <input type="text" id="input-hospital-name" placeholder="เช่น โรงพยาบาลศูนย์ขอนแก่น" data-i18n-placeholder="facilityInputPlaceholder"
+              class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-2 border font-medium text-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="reportProvinceLabel">จังหวัด</label>
+            <input type="text" id="input-province" placeholder="เช่น ขอนแก่น" data-i18n-placeholder="provinceInputPlaceholder"
+              class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 p-2 border font-medium text-slate-800">
+          </div>
+        </div>
+      </div>
+
       <!-- 15 Rows Preview Table -->
       <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
         <h3 class="text-sm font-bold text-slate-900 mb-3" data-i18n="previewDataTitle">
@@ -563,7 +581,7 @@
       </div>
 
       <!-- Active Model Info Bar -->
-      <div id="active-model-bar" class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex items-center justify-between gap-3">
+      <div id="active-model-bar" class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0">
             <i class="fa-solid fa-calculator"></i>
@@ -579,6 +597,14 @@
               Model 2 applied to rows with complete age, sex, and season; Model 1 applied to other eligible records.
             </p>
           </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="btn-quick-facility-modal" class="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-lg transition flex items-center gap-2 shadow-2xs" title="ตั้งค่าชื่อโรงพยาบาลและจังหวัดสำหรับรายงาน">
+            <i class="fa-solid fa-hospital text-emerald-700"></i>
+            <span id="active-hospital-display" data-i18n="activeHospitalUnset">โรงพยาบาล: (ยังไม่ระบุ - Optional)</span>
+            <i class="fa-solid fa-pen text-[10px] text-slate-400"></i>
+          </button>
         </div>
       </div>
 
@@ -1221,7 +1247,7 @@
     <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl max-h-[92vh] flex flex-col">
       
       <!-- Top Action Bar (hidden on print) -->
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4 no-print">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3 no-print">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-file-medical text-emerald-700"></i>
           <span class="font-bold text-slate-800 text-sm">Hospital Surveillance Report (Division of Epidemiology DDC)</span>
@@ -1238,6 +1264,38 @@
           <button id="btn-close-report" class="px-3 py-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg">
             Close
           </button>
+        </div>
+      </div>
+
+      <!-- Facility Customization Bar (Dedicated, No-print) -->
+      <div class="bg-gradient-to-r from-emerald-50 via-teal-50/40 to-emerald-50 border border-emerald-200/90 rounded-xl p-3 mb-3 no-print shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center flex-shrink-0 text-sm shadow-xs">
+              <i class="fa-solid fa-hospital"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm font-bold text-slate-800" data-i18n="reportFacilityConfigTitle">ชื่อหน่วยงานสำหรับแสดงในรายงาน</span>
+                <span class="px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full" data-i18n="optionalBadge">ระบุหรือไม่ก็ได้ (Optional)</span>
+              </div>
+              <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5" data-i18n="reportFacilityConfigHelp">
+                ระบุชื่อโรงพยาบาลและจังหวัดเพื่อแสดงบนหัวรายงาน Word (.docx) และใบบันทึกผล (หากไม่ระบุ ระบบจะใช้ชื่อมาตรฐาน)
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
+            <div class="relative flex-1 sm:w-56">
+              <input type="text" id="report-input-hospital" placeholder="ชื่อโรงพยาบาล เช่น รพ.ศูนย์..." data-i18n-placeholder="facilityInputPlaceholder"
+                class="w-full text-xs bg-white rounded-lg border border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 py-2 pl-8 pr-3 shadow-xs font-medium text-slate-800">
+              <i class="fa-solid fa-square-h text-slate-400 absolute left-2.5 top-2.5 text-xs"></i>
+            </div>
+            <div class="relative w-full sm:w-36">
+              <input type="text" id="report-input-province" placeholder="จังหวัด..." data-i18n-placeholder="provinceInputPlaceholder"
+                class="w-full text-xs bg-white rounded-lg border border-slate-300 focus:ring-emerald-500 focus:border-emerald-500 py-2 pl-8 pr-3 shadow-xs font-medium text-slate-800">
+              <i class="fa-solid fa-location-dot text-slate-400 absolute left-2.5 top-2.5 text-xs"></i>
+            </div>
+          </div>
         </div>
       </div>
 

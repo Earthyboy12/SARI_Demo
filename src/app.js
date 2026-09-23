@@ -181,8 +181,50 @@ export function updateStaticTexts() {
   });
 }
 
+export function updateHospitalInfo(name, province) {
+  if (name !== undefined) state.hospitalInfo.hospitalName = name;
+  if (province !== undefined) state.hospitalInfo.province = province;
+
+  if (typeof document === "undefined") return;
+
+  const currentName = state.hospitalInfo.hospitalName || "";
+  const currentProv = state.hospitalInfo.province || "";
+
+  // Sync inputs across mapping view and report modal
+  ["input-hospital-name", "report-input-hospital"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && el.value !== currentName) el.value = currentName;
+  });
+  ["input-province", "report-input-province"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && el.value !== currentProv) el.value = currentProv;
+  });
+
+  // Sync Active Model Bar pill
+  const activeDisp = document.getElementById("active-hospital-display");
+  if (activeDisp) {
+    if (currentName) {
+      activeDisp.textContent = `${state.lang === "th" ? "โรงพยาบาล" : "Facility"}: ${currentName}${currentProv ? ` (${currentProv})` : ""}`;
+    } else {
+      activeDisp.textContent = t("activeHospitalUnset");
+    }
+  }
+
+  // Sync Surveillance Report Live Preview
+  const isTh = state.lang === "th";
+  const repFac = document.getElementById("report-facility-name");
+  const repProv = document.getElementById("report-province-name");
+  if (repFac) {
+    repFac.textContent = currentName || (isTh ? "โรงพยาบาลศูนย์ / โรงพยาบาลทั่วไป" : "Sentinel Hospital Surveillance Site");
+  }
+  if (repProv) {
+    repProv.textContent = currentProv || (isTh ? "ประเทศไทย" : "Thailand");
+  }
+}
+
 function updateLanguageUI() {
   updateStaticTexts();
+  updateHospitalInfo();
   const langThBtn = document.getElementById("btn-lang-th");
   const langEnBtn = document.getElementById("btn-lang-en");
   if (langThBtn && langEnBtn) {
@@ -402,10 +444,22 @@ function bindEvents() {
   });
 
   document.getElementById("input-hospital-name")?.addEventListener("input", (e) => {
-    state.hospitalInfo.hospitalName = e.target.value;
+    updateHospitalInfo(e.target.value, undefined);
   });
   document.getElementById("input-province")?.addEventListener("input", (e) => {
-    state.hospitalInfo.province = e.target.value;
+    updateHospitalInfo(undefined, e.target.value);
+  });
+  document.getElementById("report-input-hospital")?.addEventListener("input", (e) => {
+    updateHospitalInfo(e.target.value, undefined);
+  });
+  document.getElementById("report-input-province")?.addEventListener("input", (e) => {
+    updateHospitalInfo(undefined, e.target.value);
+  });
+  document.getElementById("btn-quick-facility-modal")?.addEventListener("click", () => {
+    openSurveillanceReport();
+    setTimeout(() => {
+      document.getElementById("report-input-hospital")?.focus();
+    }, 150);
   });
 
   document.getElementById("btn-about-model")?.addEventListener("click", openModelInfoModal);
@@ -2002,6 +2056,11 @@ function openSurveillanceReport() {
 
   const k = state.aggregatedResults.kpis;
   const isTh = state.lang === "th";
+
+  const inpFac = document.getElementById("report-input-hospital");
+  const inpProv = document.getElementById("report-input-province");
+  if (inpFac) inpFac.value = state.hospitalInfo.hospitalName || "";
+  if (inpProv) inpProv.value = state.hospitalInfo.province || "";
 
   document.getElementById("report-facility-name").textContent =
     state.hospitalInfo.hospitalName || (isTh ? "โรงพยาบาลศูนย์ / โรงพยาบาลทั่วไป" : "Sentinel Hospital Surveillance Site");
