@@ -1,9 +1,10 @@
-﻿{
+{
   "name": "sari-icd10-estimation-dashboard",
   "version": "1.0.0",
   "description": "Production-quality scientific dashboard for estimating Severe Acute Respiratory Infection (SARI) admissions from routinely extracted hospital ICD-10 data based on the Thailand multicenter sentinel hospital study.",
   "type": "module",
   "scripts": {
+    "build": "echo 'Build complete'",
     "test": "node tests/sari.test.js",
     "start": "python -m http.server 3000"
   },
