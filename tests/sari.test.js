@@ -423,6 +423,38 @@ async function runTests() {
     assert.strictEqual(state.hospitalInfo.province, "Khon Kaen");
   });
 
+  console.log("\n[9] Testing Data Guide Manual & Translation Keys:");
+
+  await test("Data extraction manual translations exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const guideKeys = [
+      "dataGuideBtn", "dataGuideTitle", "dataGuideSubtitle",
+      "dataGuideVarTitle", "dataGuideVarDesc",
+      "varAdmitDate", "varAdmitDateDesc",
+      "varAge", "varAgeDesc",
+      "varSex", "varSexDesc",
+      "varIcd", "varIcdDesc",
+      "dataGuideIcdTitle", "dataGuideIcdDesc",
+      "icdGroupJTitle", "icdGroupNonJTitle", "icdGroupNonJNote",
+      "dataGuideTipsTitle", "dataGuideTip1", "dataGuideTip2", "dataGuideTip3", "dataGuideTip4",
+      "toggleGuideText"
+    ];
+    for (const key of guideKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("App exports openDataGuide, closeDataGuide, and toggleGuideCollapse", async () => {
+    const { openDataGuide, closeDataGuide, toggleGuideCollapse } = await import("../src/app.js");
+    assert.strictEqual(typeof openDataGuide, "function");
+    assert.strictEqual(typeof closeDataGuide, "function");
+    assert.strictEqual(typeof toggleGuideCollapse, "function");
+    // Verify safe execution without DOM
+    assert.doesNotThrow(() => openDataGuide());
+    assert.doesNotThrow(() => closeDataGuide());
+    assert.doesNotThrow(() => toggleGuideCollapse());
+  });
 
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);

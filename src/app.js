@@ -464,6 +464,18 @@ function bindEvents() {
 
   document.getElementById("btn-about-model")?.addEventListener("click", openModelInfoModal);
   document.getElementById("btn-close-model-info")?.addEventListener("click", closeModelInfoModal);
+  document.getElementById("btn-open-data-guide")?.addEventListener("click", openDataGuide);
+  document.getElementById("btn-close-data-guide")?.addEventListener("click", closeDataGuide);
+  document.getElementById("btn-close-data-guide-footer")?.addEventListener("click", closeDataGuide);
+  document.getElementById("btn-toggle-guide-collapse")?.addEventListener("click", toggleGuideCollapse);
+
+  const modalDataGuide = document.getElementById("modal-data-guide");
+  if (modalDataGuide) {
+    modalDataGuide.addEventListener("click", (e) => {
+      if (e.target === modalDataGuide) closeDataGuide();
+    });
+  }
+
   document.getElementById("btn-data-quality")?.addEventListener("click", openDataQualityModal);
   document.getElementById("btn-close-dq-modal")?.addEventListener("click", closeDataQualityModal);
   document.getElementById("btn-download-dq-report")?.addEventListener("click", downloadDataQualityReport);
@@ -1749,6 +1761,37 @@ function openModelInfoModal() {
 
 function closeModelInfoModal() {
   document.getElementById("modal-model-info")?.classList.add("hidden");
+}
+
+export function openDataGuide() {
+  if (typeof document === "undefined") return;
+  const modal = document.getElementById("modal-data-guide");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+}
+
+export function closeDataGuide() {
+  if (typeof document === "undefined") return;
+  document.getElementById("modal-data-guide")?.classList.add("hidden");
+}
+
+export function toggleGuideCollapse() {
+  if (typeof document === "undefined") return;
+  const body = document.getElementById("guide-content-body");
+  const icon = document.getElementById("icon-toggle-guide");
+  if (!body) return;
+  const isHidden = body.classList.contains("hidden");
+  if (isHidden) {
+    body.classList.remove("hidden");
+    if (icon) {
+      icon.classList.remove("rotate-180");
+    }
+  } else {
+    body.classList.add("hidden");
+    if (icon) {
+      icon.classList.add("rotate-180");
+    }
+  }
 }
 
 function getCanvasDataURL(canvas) {
