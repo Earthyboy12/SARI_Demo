@@ -50,11 +50,12 @@ export const TRANSLATIONS = {
     icdGroupNonJTitle: "กลุ่มโรคนอกระบบทางเดินหายใจ (Study Non-J Codes: 7 กลุ่มสำคัญ)",
     icdGroupNonJNote: "💡 เหตุผลที่ต้องมีรหัส Non-J: จากงานวิจัยของกองระบาดวิทยาพบว่า ผู้ป่วย SARI จริงถึงประมาณ 20% (1 ในทุกๆ 5 ราย) แพทย์ไม่ได้ลงรหัสกลุ่ม J การรวมรหัสกลุ่ม Non-J เข้ามาด้วยจึงทำให้ระบบประเมินภาระโรค SARI ได้ครบถ้วนและไม่ตกสำรวจ",
     dataGuideTipsTitle: "ข้อแนะนำการดึงข้อมูลสำหรับเจ้าหน้าที่เวชสถิติ / IT โรงพยาบาล:",
-    dataGuideTip1: "ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง ipt, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล",
+    dataGuideTip1: "ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง IPD, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล",
     dataGuideTip2: "สามารถดึงข้อมูลผู้ป่วยในทั้งหมด หรือเลือกกรองเฉพาะผู้ที่มีรหัสโรคหลัก (Primary Diagnosis) ตรงกับ 11 กลุ่มข้างต้นได้",
     dataGuideTip3: "ไม่ต้องดึงข้อมูลส่วนบุคคล (ไม่ต้องมีชื่อ-นามสกุล, เลขประจำตัวประชาชน, หรือที่อยู่) เพื่อความปลอดภัยสูงสุด ข้อมูลประมวลผลในเบราว์เซอร์ของท่าน 100%",
     dataGuideTip4: "บันทึกเป็นไฟล์ Excel (.xlsx) หรือ CSV แล้วนำมาลากวางในกล่องอัปโหลดด้านล่างได้ทันที หรือกดปุ่ม Download Template ด้านบนเพื่อดูตัวอย่าง",
     toggleGuideText: "ซ่อน/แสดงคู่มือ",
+    appVersionNote: "Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)",
 
     // Column Mapping
     columnMappingTitle: "การจับคู่คอลัมน์ข้อมูล (Column Mapping)",
@@ -258,11 +259,12 @@ export const TRANSLATIONS = {
     icdGroupNonJTitle: "Non-Respiratory Diagnostic Groups (Study Non-J Codes: 7 Key Groups)",
     icdGroupNonJNote: "💡 Why Non-J codes are needed: Study evidence demonstrated that ~20% of true SARI patients are admitted under non-J codes. Incorporating these ensures comprehensive surveillance without underestimation.",
     dataGuideTipsTitle: "Data Extraction Recommendations for Hospital IT & Medical Records:",
-    dataGuideTip1: "Extract from hospital inpatient (IPD) admission tables (e.g. HIS / HOSxP ipt, iptdiag)",
+    dataGuideTip1: "Extract from hospital inpatient (IPD) admission tables (e.g. HIS / HOSxP IPD, iptdiag)",
     dataGuideTip2: "You may extract all hospital admissions or filter by the 11 primary diagnostic categories above",
     dataGuideTip3: "Do NOT include personally identifiable information (no patient names, national IDs, or addresses) to maintain 100% privacy",
     dataGuideTip4: "Save as Excel (.xlsx) or CSV format and drop into the upload box below, or click Download Template for reference",
     toggleGuideText: "Toggle Guide",
+    appVersionNote: "Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)",
 
     // Column Mapping
     columnMappingTitle: "Data Column Mapping",

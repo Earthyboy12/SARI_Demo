@@ -437,12 +437,22 @@ async function runTests() {
       "dataGuideIcdTitle", "dataGuideIcdDesc",
       "icdGroupJTitle", "icdGroupNonJTitle", "icdGroupNonJNote",
       "dataGuideTipsTitle", "dataGuideTip1", "dataGuideTip2", "dataGuideTip3", "dataGuideTip4",
-      "toggleGuideText"
+      "toggleGuideText", "appVersionNote"
     ];
     for (const key of guideKeys) {
       assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
       assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
     }
+
+    // Verify IPD table correction (not ipt)
+    assert(TRANSLATIONS.th.dataGuideTip1.includes("IPD, iptdiag"), "Thai dataGuideTip1 must mention IPD, iptdiag");
+    assert(!TRANSLATIONS.th.dataGuideTip1.includes("ipt, iptdiag"), "Thai dataGuideTip1 must not mention ipt, iptdiag");
+    assert(TRANSLATIONS.en.dataGuideTip1.includes("IPD, iptdiag"), "English dataGuideTip1 must mention IPD, iptdiag");
+
+    // Verify Version 2.0 note
+    const expectedVersionNote = "Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)";
+    assert.strictEqual(TRANSLATIONS.th.appVersionNote, expectedVersionNote);
+    assert.strictEqual(TRANSLATIONS.en.appVersionNote, expectedVersionNote);
   });
 
   await test("App exports openDataGuide, closeDataGuide, and toggleGuideCollapse", async () => {

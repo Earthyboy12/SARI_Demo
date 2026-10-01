@@ -610,7 +610,7 @@
               <span>ข้อแนะนำการดึงข้อมูลสำหรับเจ้าหน้าที่เวชสถิติ / IT โรงพยาบาล:</span>
             </h5>
             <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
-              <li data-i18n="dataGuideTip1">ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง ipt, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล</li>
+              <li data-i18n="dataGuideTip1">ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง IPD, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล</li>
               <li data-i18n="dataGuideTip2">สามารถดึงข้อมูลผู้ป่วยในทั้งหมด หรือเลือกกรองเฉพาะผู้ที่มีรหัสโรคหลัก (Primary Diagnosis) ตรงกับ 11 กลุ่มข้างต้นได้</li>
               <li data-i18n="dataGuideTip3">ไม่ต้องดึงข้อมูลส่วนบุคคล (ไม่ต้องมีชื่อ-นามสกุล, เลขประจำตัวประชาชน, หรือที่อยู่) เพื่อความปลอดภัยสูงสุด ข้อมูลประมวลผลในเบราว์เซอร์ของท่าน 100%</li>
               <li data-i18n="dataGuideTip4">บันทึกเป็นไฟล์ Excel (.xlsx) หรือ CSV แล้วนำมาลากวางในกล่องอัปโหลดด้านล่างได้ทันที หรือกดปุ่ม Download Template ด้านบนเพื่อดูตัวอย่าง</li>
@@ -657,6 +657,15 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            <!-- Version & Author Note -->
+            <div class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+              <div class="flex items-center gap-1.5 font-medium text-slate-600">
+                <i class="fa-solid fa-code-commit text-emerald-600"></i>
+                <span data-i18n="appVersionNote">Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)</span>
+              </div>
+              <span class="text-[11px] text-slate-400">SARI ICD-10 Surveillance &amp; Estimation System</span>
             </div>
           </div>
 
@@ -1343,6 +1352,19 @@
 
     </div>
 
+    <!-- APPLICATION GLOBAL FOOTER -->
+    <footer class="mt-12 mb-6 pt-6 border-t border-slate-200 text-center text-xs text-slate-500 space-y-1.5 no-print">
+      <div class="flex flex-wrap items-center justify-center gap-2 font-medium text-slate-700">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+        <span>SARI ICD-10 Surveillance &amp; Estimation Dashboard</span>
+        <span class="text-slate-300 hidden sm:inline">•</span>
+        <span class="text-emerald-800 font-semibold" data-i18n="appVersionNote">Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)</span>
+      </div>
+      <p class="text-[11px] text-slate-400">
+        Bureau of Epidemiology, Department of Disease Control (DDC) &bull; Field Epidemiology Training Program (FETP Thailand) &bull; U.S. CDC Collaboration
+      </p>
+    </footer>
+
   </main>
 
   <!-- MODALS -->
@@ -1494,7 +1516,11 @@
 
       </div>
 
-      <div class="pt-3 border-t border-slate-200 flex justify-end">
+      <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-code-commit text-emerald-600"></i>
+          <span data-i18n="appVersionNote">Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)</span>
+        </div>
         <button onclick="document.getElementById('modal-model-info').classList.add('hidden')" class="px-5 py-2 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg">
           Close
         </button>
@@ -1675,7 +1701,7 @@
             <span>ข้อแนะนำการดึงข้อมูลสำหรับเจ้าหน้าที่เวชสถิติ / IT โรงพยาบาล:</span>
           </h5>
           <ul class="list-disc pl-5 space-y-1 text-[11px] text-slate-600">
-            <li data-i18n="dataGuideTip1">ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง ipt, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล</li>
+            <li data-i18n="dataGuideTip1">ดึงข้อมูลจากตารางผู้ป่วยใน (IPD Inpatient Admissions) เช่น ตาราง IPD, iptdiag ในระบบ HOSxP / HIS ของโรงพยาบาล</li>
             <li data-i18n="dataGuideTip2">สามารถดึงข้อมูลผู้ป่วยในทั้งหมด หรือเลือกกรองเฉพาะผู้ที่มีรหัสโรคหลัก (Primary Diagnosis) ตรงกับ 11 กลุ่มข้างต้นได้</li>
             <li data-i18n="dataGuideTip3">ไม่ต้องดึงข้อมูลส่วนบุคคล (ไม่ต้องมีชื่อ-นามสกุล, เลขประจำตัวประชาชน, หรือที่อยู่) เพื่อความปลอดภัยสูงสุด ข้อมูลประมวลผลในเบราว์เซอร์ของท่าน 100%</li>
             <li data-i18n="dataGuideTip4">บันทึกเป็นไฟล์ Excel (.xlsx) หรือ CSV แล้วนำมาลากวางในกล่องอัปโหลดได้ทันที หรือกดปุ่ม Download Template เพื่อดูตัวอย่าง</li>
@@ -1683,7 +1709,11 @@
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-200 flex justify-end">
+      <div class="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-code-commit text-emerald-600"></i>
+          <span data-i18n="appVersionNote">Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)</span>
+        </div>
         <button id="btn-close-data-guide-footer" class="px-5 py-2 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg">
           Close
         </button>
