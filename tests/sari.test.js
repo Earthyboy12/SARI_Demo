@@ -444,10 +444,12 @@ async function runTests() {
       assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
     }
 
-    // Verify IPD table correction (not ipt)
-    assert(TRANSLATIONS.th.dataGuideTip1.includes("IPD, iptdiag"), "Thai dataGuideTip1 must mention IPD, iptdiag");
-    assert(!TRANSLATIONS.th.dataGuideTip1.includes("ipt, iptdiag"), "Thai dataGuideTip1 must not mention ipt, iptdiag");
-    assert(TRANSLATIONS.en.dataGuideTip1.includes("IPD, iptdiag"), "English dataGuideTip1 must mention IPD, iptdiag");
+    // Verify IPD, IPDDIAG table correction (not ipt, iptdiag)
+    assert(TRANSLATIONS.th.dataGuideTip1.includes("IPD, IPDDIAG"), "Thai dataGuideTip1 must mention IPD, IPDDIAG");
+    assert(!TRANSLATIONS.th.dataGuideTip1.includes("iptdiag"), "Thai dataGuideTip1 must not mention iptdiag");
+    assert(!TRANSLATIONS.th.dataGuideTip1.includes("ipt,"), "Thai dataGuideTip1 must not mention ipt,");
+    assert(TRANSLATIONS.en.dataGuideTip1.includes("IPD, IPDDIAG"), "English dataGuideTip1 must mention IPD, IPDDIAG");
+    assert(!TRANSLATIONS.en.dataGuideTip1.includes("iptdiag"), "English dataGuideTip1 must not mention iptdiag");
 
     // Verify Version 2.0 note
     const expectedVersionNote = "Version 2.0 (01/10/2026 Developed by Sethapong Lertsakulbunlue the Principal investigator)";
