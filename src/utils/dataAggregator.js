@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Surveillance Data Aggregation Engine
  *
  * Computes:
@@ -158,7 +158,8 @@ export function aggregateSurveillance(rows, filters = {}) {
         estimatedSARIJ: 0,
         estimatedSARINonJ: 0,
         maleSARI: 0,
-        femaleSARI: 0
+        femaleSARI: 0,
+        icdCounts: {}
       });
     }
     const item = weeklyMap.get(key);
@@ -175,6 +176,10 @@ export function aggregateSurveillance(rows, filters = {}) {
       }
       if (r.sex === "male") item.maleSARI += p;
       if (r.sex === "female") item.femaleSARI += p;
+
+      if (r.icdCategory) {
+        item.icdCounts[r.icdCategory] = (item.icdCounts[r.icdCategory] || 0) + 1;
+      }
     }
   }
   const weeklySeries = Array.from(weeklyMap.values()).sort((a, b) =>
@@ -198,7 +203,8 @@ export function aggregateSurveillance(rows, filters = {}) {
         studyNonJCodes: 0,
         estimatedSARI: 0,
         estimatedSARIJ: 0,
-        estimatedSARINonJ: 0
+        estimatedSARINonJ: 0,
+        icdCounts: {}
       });
     }
     const item = monthlyMap.get(key);
@@ -212,6 +218,10 @@ export function aggregateSurveillance(rows, filters = {}) {
       } else {
         item.studyNonJCodes++;
         item.estimatedSARINonJ += p;
+      }
+
+      if (r.icdCategory) {
+        item.icdCounts[r.icdCategory] = (item.icdCounts[r.icdCategory] || 0) + 1;
       }
     }
   }

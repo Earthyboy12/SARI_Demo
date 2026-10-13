@@ -138,6 +138,10 @@ export const TRANSLATIONS = {
 
     // Charts & Sections
     selectLinesLabel: "เลือกเส้นกราฟที่แสดง:",
+    mainIcdSubgroupLabel: "กลุ่มโรคย่อย ICD-10 (Subgroup):",
+    optAllIcdGroups: "ทุกกลุ่มโรค (All Diagnostic Groups)",
+    lineSubgroupAdmissions: "กลุ่มโรคย่อยที่เลือก (Unweighted N)",
+    subgroupStatRawCount: "จำนวนรับรักษาจริง (ไม่ถ่วงน้ำหนัก):",
     lineEligibleLabel: "การรับรักษาเข้าเกณฑ์",
     lineJCodesLabel: "รหัสกลุ่ม J ในการศึกษา",
     lineSARILabel: "SARI ประมาณการ (Estimated SARI)",
@@ -375,6 +379,10 @@ export const TRANSLATIONS = {
 
     // Charts & Sections
     selectLinesLabel: "Display Lines:",
+    mainIcdSubgroupLabel: "ICD-10 Subgroup:",
+    optAllIcdGroups: "All Diagnostic Groups (Overview)",
+    lineSubgroupAdmissions: "Selected Subgroup (Unweighted N)",
+    subgroupStatRawCount: "Unweighted Raw Admissions:",
     lineEligibleLabel: "Eligible Admissions",
     lineJCodesLabel: "Study J-codes",
     lineSARILabel: "Estimated SARI",

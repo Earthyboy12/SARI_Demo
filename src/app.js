@@ -114,6 +114,7 @@ export const state = {
   },
   chartPreferences: {
     timeAggregation: "weekly", // "weekly" | "monthly"
+    mainIcdSubgroup: "all",
     smallMultiplesSharedY: true,
     overlayJCodes: true,
     sexLayout: "combined", // "combined" | "split"
@@ -122,7 +123,8 @@ export const state = {
     mainSeriesVisible: {
       eligible: true,
       jcodes: true,
-      sari: true
+      sari: true,
+      subgroup: true
     }
   },
   hospitalInfo: {
@@ -605,6 +607,13 @@ function bindEvents() {
   document.getElementById("toggle-line-sari")?.addEventListener("change", (e) => {
     state.chartPreferences.mainSeriesVisible.sari = e.target.checked;
     renderMainTimeSeriesChart();
+  });
+  document.getElementById("toggle-line-subgroup")?.addEventListener("change", (e) => {
+    state.chartPreferences.mainSeriesVisible.subgroup = e.target.checked;
+    renderMainTimeSeriesChart();
+  });
+  document.getElementById("select-main-icd-subgroup")?.addEventListener("change", (e) => {
+    setMainIcdSubgroup(e.target.value);
   });
 
   document.getElementById("toggle-shared-y")?.addEventListener("change", (e) => {
@@ -1291,7 +1300,13 @@ function renderKPICards() {
   setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", fmt(k.estimatedSARINonJCode), `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`);
 }
 
-function renderMainTimeSeriesChart() {
+export function setMainIcdSubgroup(subgroup) {
+  state.chartPreferences.mainIcdSubgroup = subgroup || "all";
+  renderMainTimeSeriesChart();
+}
+
+export function renderMainTimeSeriesChart() {
+  if (typeof document === "undefined") return;
   const canvas = document.getElementById("chart-main-timeseries");
   if (!canvas || typeof Chart === "undefined") return;
 
@@ -1304,14 +1319,47 @@ function renderMainTimeSeriesChart() {
   const sariData = series.map((s) => Number(s.estimatedSARI.toFixed(2)));
 
   const datasets = [];
-  const vis = state.chartPreferences.mainSeriesVisible || { eligible: true, jcodes: true, sari: true };
+  const vis = state.chartPreferences.mainSeriesVisible || { eligible: true, jcodes: true, sari: true, subgroup: true };
 
   const chkEligible = document.getElementById("toggle-line-eligible");
   const chkJcodes = document.getElementById("toggle-line-jcodes");
   const chkSari = document.getElementById("toggle-line-sari");
+  const chkSubgroup = document.getElementById("toggle-line-subgroup");
+  const selectSubgroupElem = document.getElementById("select-main-icd-subgroup");
+  const pillElem = document.getElementById("main-subgroup-stat-pill");
+  const containerToggleSubgroup = document.getElementById("container-toggle-subgroup");
+  const labelSubgroupLine = document.getElementById("label-subgroup-line-text");
+
   if (chkEligible) chkEligible.checked = vis.eligible !== false;
   if (chkJcodes) chkJcodes.checked = vis.jcodes !== false;
   if (chkSari) chkSari.checked = vis.sari !== false;
+  if (chkSubgroup) chkSubgroup.checked = vis.subgroup !== false;
+
+  const selectedSubgroup = state.chartPreferences.mainIcdSubgroup || "all";
+  if (selectSubgroupElem && selectSubgroupElem.value !== selectedSubgroup) {
+    selectSubgroupElem.value = selectedSubgroup;
+  }
+
+  // Handle Subgroup Stat Pill and Visibility
+  if (selectedSubgroup !== "all") {
+    const totalSubgroupCount = series.reduce((acc, s) => acc + ((s.icdCounts && s.icdCounts[selectedSubgroup]) || 0), 0);
+    const totalEligible = series.reduce((acc, s) => acc + (s.totalEligible || 0), 0);
+    const pct = totalEligible > 0 ? ((totalSubgroupCount / totalEligible) * 100).toFixed(1) : "0.0";
+
+    if (pillElem) {
+      pillElem.classList.remove("hidden");
+      pillElem.innerHTML = `<i class="fa-solid fa-filter text-amber-500"></i><span><strong>${selectedSubgroup}</strong>: ${totalSubgroupCount.toLocaleString()} ${state.lang === "th" ? "ราย" : "cases"} (${pct}% ${state.lang === "th" ? "ของการรับรักษาเข้าเกณฑ์" : "of eligible"}) &bull; <span class="text-amber-800 font-semibold underline underline-offset-2">${t("lineSubgroupAdmissions")}</span></span>`;
+    }
+    if (containerToggleSubgroup) {
+      containerToggleSubgroup.classList.remove("hidden");
+    }
+    if (labelSubgroupLine) {
+      labelSubgroupLine.textContent = `${selectedSubgroup} (Unweighted N)`;
+    }
+  } else {
+    if (pillElem) pillElem.classList.add("hidden");
+    if (containerToggleSubgroup) containerToggleSubgroup.classList.add("hidden");
+  }
 
   if (vis.eligible) {
     datasets.push({
@@ -1353,6 +1401,23 @@ function renderMainTimeSeriesChart() {
     });
   }
 
+  // Selected ICD-10 Subgroup Line (Raw unweighted admissions count)
+  if (selectedSubgroup !== "all" && vis.subgroup !== false) {
+    const subgroupData = series.map((s) => (s.icdCounts && s.icdCounts[selectedSubgroup]) || 0);
+    datasets.push({
+      label: `${selectedSubgroup} (${t("lineSubgroupAdmissions")})`,
+      data: subgroupData,
+      borderColor: "#f59e0b",
+      backgroundColor: "#f59e0b",
+      borderWidth: 2.5,
+      borderDash: [5, 4],
+      pointStyle: "triangle",
+      pointRadius: series.length > 50 ? 2 : 4,
+      pointHoverRadius: 6,
+      tension: 0.1
+    });
+  }
+
   if (state.activeCharts.main) {
     state.activeCharts.main.destroy();
   }
@@ -1385,11 +1450,16 @@ function renderMainTimeSeriesChart() {
               if (!item) return "";
               const nonJ = item.estimatedSARINonJ ? item.estimatedSARINonJ.toFixed(1) : "0.0";
               const jSari = item.estimatedSARIJ ? item.estimatedSARIJ.toFixed(1) : "0.0";
-              return [
+              const lines = [
                 "-----------------------",
                 `SARI from J-codes: ${jSari}`,
                 `SARI from Non-J: ${nonJ}`
               ];
+              if (selectedSubgroup !== "all") {
+                const subCount = (item.icdCounts && item.icdCounts[selectedSubgroup]) || 0;
+                lines.push(`${selectedSubgroup} (Unweighted N): ${subCount}`);
+              }
+              return lines;
             }
           }
         }

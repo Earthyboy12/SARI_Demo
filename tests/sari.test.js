@@ -556,6 +556,93 @@ async function runTests() {
     assert.doesNotThrow(() => updateQuickNavScrollSpy());
   });
 
+  console.log("\n[12] Testing ICD-10 Subgroup Selection & Unweighted Counts in Surveillance Trends:");
+
+  await test("ICD-10 subgroup translation keys exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const subgroupKeys = [
+      "mainIcdSubgroupLabel", "optAllIcdGroups", "lineSubgroupAdmissions", "subgroupStatRawCount"
+    ];
+    for (const key of subgroupKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("weeklySeries and monthlySeries track unweighted icdCounts matching icdComposition admissions", async () => {
+    const rawRows = [
+      { id: 1, age: 65, sex: "female", icd10: "J18.9", adm_date: "2024-01-10" },
+      { id: 2, age: 70, sex: "male", icd10: "J15.1", adm_date: "2024-01-12" },
+      { id: 3, age: 4, sex: "male", icd10: "J10.1", adm_date: "2024-01-15" },
+      { id: 4, age: 30, sex: "female", icd10: "J06.9", adm_date: "2024-01-20" },
+      { id: 5, age: 50, sex: "male", icd10: "R05", adm_date: "2024-02-05" },
+      { id: 6, age: 72, sex: "female", icd10: "I50.9", adm_date: "2024-02-14" },
+      { id: 7, age: 10, sex: "male", icd10: "J18.0", adm_date: "2024-02-22" },
+      { id: 8, age: 80, sex: "female", icd10: "R50.9", adm_date: "2024-03-01" },
+      { id: 9, age: 2, sex: "female", icd10: "J11.0", adm_date: "2024-03-10" }
+    ];
+
+    const mapping = {
+      admitDateCol: "adm_date",
+      ageCol: "age",
+      sexCol: "sex",
+      icdCol: "icd10"
+    };
+
+    const processed = processSurveillanceDataset(rawRows, mapping, { preferredModel: "auto" });
+    const agg = aggregateSurveillance(processed.processedRows);
+
+    assert(Array.isArray(agg.weeklySeries) && agg.weeklySeries.length > 0, "weeklySeries must be a populated array");
+    assert(Array.isArray(agg.monthlySeries) && agg.monthlySeries.length > 0, "monthlySeries must be a populated array");
+
+    // Check that every week has icdCounts object
+    for (const w of agg.weeklySeries) {
+      assert(w.icdCounts && typeof w.icdCounts === "object", "weeklySeries item must have icdCounts");
+    }
+
+    // Check that every month has icdCounts object
+    for (const m of agg.monthlySeries) {
+      assert(m.icdCounts && typeof m.icdCounts === "object", "monthlySeries item must have icdCounts");
+    }
+
+    // Check sum of icdCounts across weeklySeries exactly matches icdComposition admissions
+    for (const comp of agg.icdComposition) {
+      const weeklySum = agg.weeklySeries.reduce((acc, w) => acc + (w.icdCounts[comp.category] || 0), 0);
+      assert.strictEqual(
+        weeklySum,
+        comp.admissions,
+        `Sum of weekly icdCounts for ${comp.category} (${weeklySum}) must equal icdComposition admissions (${comp.admissions})`
+      );
+
+      const monthlySum = agg.monthlySeries.reduce((acc, m) => acc + (m.icdCounts[comp.category] || 0), 0);
+      assert.strictEqual(
+        monthlySum,
+        comp.admissions,
+        `Sum of monthly icdCounts for ${comp.category} (${monthlySum}) must equal icdComposition admissions (${comp.admissions})`
+      );
+    }
+  });
+
+  await test("App exports setMainIcdSubgroup and safely updates state and chart preferences", async () => {
+    const { state, setMainIcdSubgroup, renderMainTimeSeriesChart } = await import("../src/app.js");
+    assert.strictEqual(typeof setMainIcdSubgroup, "function");
+    assert.strictEqual(typeof renderMainTimeSeriesChart, "function");
+
+    // Switch subgroup
+    setMainIcdSubgroup("Influenza");
+    assert.strictEqual(state.chartPreferences.mainIcdSubgroup, "Influenza");
+
+    setMainIcdSubgroup("Pneumonia");
+    assert.strictEqual(state.chartPreferences.mainIcdSubgroup, "Pneumonia");
+
+    // Switch back to "all"
+    setMainIcdSubgroup("all");
+    assert.strictEqual(state.chartPreferences.mainIcdSubgroup, "all");
+
+    // Does not throw without DOM
+    assert.doesNotThrow(() => renderMainTimeSeriesChart());
+  });
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

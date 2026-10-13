@@ -1523,9 +1523,33 @@
             <p class="text-xs sm:text-sm text-slate-500">
               Eligible ICD admissions (Gray), Study J-codes (Blue), and Estimated SARI (Emerald)
             </p>
+            <!-- Subgroup Stat Pill (Visible when a subgroup is selected) -->
+            <div id="main-subgroup-stat-pill" class="hidden mt-2 text-xs font-medium text-amber-900 bg-amber-50/90 border border-amber-300 px-3 py-1.5 rounded-xl w-fit flex items-center gap-2 shadow-2xs"></div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- ICD-10 Subgroup Selector Dropdown -->
+            <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 shadow-2xs">
+              <label for="select-main-icd-subgroup" class="text-xs font-bold text-slate-700 flex items-center gap-1 whitespace-nowrap">
+                <i class="fa-solid fa-filter text-amber-500"></i>
+                <span data-i18n="mainIcdSubgroupLabel">กลุ่มโรคย่อย (Subgroup):</span>
+              </label>
+              <select id="select-main-icd-subgroup" class="text-xs bg-white rounded-md border border-slate-300 py-1 px-2 font-medium text-slate-800 focus:ring-emerald-500 focus:border-emerald-500 max-w-[210px] sm:max-w-xs truncate">
+                <option value="all" data-i18n="optAllIcdGroups">ทุกกลุ่มโรค (All Diagnostic Groups)</option>
+                <option value="Influenza">ไข้หวัดใหญ่ (Influenza, J09–J11)</option>
+                <option value="Pneumonia">ปอดอักเสบ (Pneumonia, J12–J18)</option>
+                <option value="Upper respiratory tract infection">ติดเชื้อทางเดินหายใจส่วนบน (URTI, J00–J06)</option>
+                <option value="Other respiratory tract diseases">โรคทางเดินหายใจอื่นๆ (J20–J22, J44, J45)</option>
+                <option value="Cough">อาการไอ (Cough, R05)</option>
+                <option value="Fever of other and unknown origin">ไข้ไม่ทราบสาเหตุ (Fever, R50)</option>
+                <option value="Abnormalities of breathing">ความผิดปกติของการหายใจ (R06)</option>
+                <option value="Other common virus infection">ไวรัสทั่วไปอื่นๆ (B34, U07)</option>
+                <option value="Heart failure">ภาวะหัวใจล้มเหลว (Heart failure, I50)</option>
+                <option value="Convulsions, not elsewhere classified">อาการชัก (Convulsions, R56)</option>
+                <option value="Infectious gastroenteritis and colitis, unspecified">กระเพาะและลำไส้อักเสบ (A09)</option>
+              </select>
+            </div>
+
             <!-- Weekly / Monthly Toggle -->
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
               <button id="toggle-weekly" class="px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded bg-emerald-700 text-white" data-i18n="aggregationToggleWeekly">
@@ -1564,6 +1588,13 @@
             <input type="checkbox" id="toggle-line-sari" checked class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer">
             <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
             <span class="font-bold text-emerald-950" data-i18n="lineSARILabel">Estimated SARI</span>
+          </label>
+
+          <!-- Selected Subgroup Line Toggle (Visible when a subgroup is selected) -->
+          <label id="container-toggle-subgroup" class="hidden inline-flex items-center gap-1.5 cursor-pointer bg-amber-50 hover:bg-amber-100/80 px-3 py-1.5 rounded-lg border border-amber-300 transition select-none">
+            <input type="checkbox" id="toggle-line-subgroup" checked class="rounded border-amber-300 text-amber-600 focus:ring-amber-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span id="label-subgroup-line-text" class="font-bold text-amber-950">Subgroup Admissions (Unweighted N)</span>
           </label>
         </div>
 
