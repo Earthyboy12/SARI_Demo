@@ -519,6 +519,43 @@ async function runTests() {
     assert.strictEqual(state.theme, "emerald");
   });
 
+  console.log("\n[11] Testing Quick Navigation Side Menu & Functions:");
+
+  await test("Quick Navigation translation keys exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const quickNavKeys = [
+      "quickNavTitle", "quickNavSub", "quickNavCollapse", "quickNavExpand",
+      "quickNavKpi", "quickNavFilters", "quickNavTrend", "quickNavAgeMultiples",
+      "quickNavSexJ", "quickNavIcd", "quickNavTables", "quickNavSeasonal",
+      "quickNavNotes", "quickNavTop"
+    ];
+    for (const key of quickNavKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("App exports toggleQuickNav, jumpToDashboardSection, and updateQuickNavScrollSpy", async () => {
+    const { state, toggleQuickNav, jumpToDashboardSection, updateQuickNavScrollSpy, updateQuickNavActiveItem } = await import("../src/app.js");
+    assert.strictEqual(typeof toggleQuickNav, "function");
+    assert.strictEqual(typeof jumpToDashboardSection, "function");
+    assert.strictEqual(typeof updateQuickNavScrollSpy, "function");
+    assert.strictEqual(typeof updateQuickNavActiveItem, "function");
+
+    // Toggle quick nav state safely
+    toggleQuickNav(true);
+    assert.strictEqual(state.quickNavCollapsed, true);
+    toggleQuickNav(false);
+    assert.strictEqual(state.quickNavCollapsed, false);
+    toggleQuickNav();
+    assert.strictEqual(state.quickNavCollapsed, true);
+
+    // Verify safe execution without DOM
+    assert.doesNotThrow(() => jumpToDashboardSection("kpi-cards-grid"));
+    assert.doesNotThrow(() => updateQuickNavActiveItem("main-trend-card"));
+    assert.doesNotThrow(() => updateQuickNavScrollSpy());
+  });
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

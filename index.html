@@ -429,6 +429,97 @@
         object-fit: contain !important;
       }
     }
+    /* QUICK NAVIGATION SIDE MENU STYLING */
+    #quick-nav-sidebar {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .quick-nav-item {
+      position: relative;
+      transition: all 0.15s ease-in-out;
+      border-left: 3px solid transparent;
+    }
+    .quick-nav-item:hover {
+      background-color: rgba(5, 150, 105, 0.08);
+      color: #065f46;
+    }
+    .quick-nav-item.active {
+      background-color: rgba(5, 150, 105, 0.12) !important;
+      color: #064e3b !important;
+      font-weight: 700 !important;
+      border-left: 3px solid #059669 !important;
+    }
+    .quick-nav-item.active i {
+      color: #059669 !important;
+    }
+
+    [data-theme="sapphire"] .quick-nav-item:hover {
+      background-color: rgba(29, 78, 216, 0.08);
+      color: #1e40af;
+    }
+    [data-theme="sapphire"] .quick-nav-item.active {
+      background-color: rgba(29, 78, 216, 0.12) !important;
+      color: #1d4ed8 !important;
+      border-left: 3px solid #1d4ed8 !important;
+    }
+    [data-theme="sapphire"] .quick-nav-item.active i {
+      color: #1d4ed8 !important;
+    }
+
+    [data-theme="midnight"] #quick-nav-card,
+    [data-theme="midnight"] #quick-nav-collapsed-btn {
+      background-color: rgba(17, 28, 51, 0.95) !important;
+      border-color: #334155 !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+    }
+    [data-theme="midnight"] .quick-nav-item {
+      color: #94a3b8 !important;
+    }
+    [data-theme="midnight"] .quick-nav-item:hover {
+      background-color: rgba(51, 65, 85, 0.5) !important;
+      color: #34d399 !important;
+    }
+    [data-theme="midnight"] .quick-nav-item.active {
+      background-color: rgba(52, 211, 153, 0.16) !important;
+      color: #34d399 !important;
+      border-left: 3px solid #34d399 !important;
+    }
+    [data-theme="midnight"] .quick-nav-item.active i {
+      color: #34d399 !important;
+    }
+
+    [data-theme="amethyst"] .quick-nav-item:hover {
+      background-color: rgba(124, 58, 237, 0.08);
+      color: #6b21a8;
+    }
+    [data-theme="amethyst"] .quick-nav-item.active {
+      background-color: rgba(124, 58, 237, 0.12) !important;
+      color: #7c3aed !important;
+      border-left: 3px solid #7c3aed !important;
+    }
+    [data-theme="amethyst"] .quick-nav-item.active i {
+      color: #7c3aed !important;
+    }
+
+    /* Target Section Flash Highlight Effect */
+    @keyframes sectionPulseHighlight {
+      0% {
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6);
+        outline: 2px solid rgba(5, 150, 105, 0.6);
+      }
+      40% {
+        box-shadow: 0 0 0 10px rgba(5, 150, 105, 0.25);
+        outline: 2px solid rgba(5, 150, 105, 0.8);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0);
+        outline: 2px solid transparent;
+      }
+    }
+    .section-flash-highlight {
+      animation: sectionPulseHighlight 1.3s ease-out;
+      border-radius: 1rem;
+    }
   </style>
 </head>
 <body class="min-h-full flex flex-col text-slate-800 bg-slate-50 antialiased">
@@ -1163,6 +1254,11 @@
             <span data-i18n="downloadReportBtn">Surveillance Report</span>
           </button>
 
+          <!-- Quick Navigation Jump Button (Advanced Mode Only) -->
+          <button id="btn-toggle-quick-nav-banner" class="dashboard-advanced-only hidden px-3.5 py-2 text-sm font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-lg transition flex items-center gap-1.5 shadow-2xs" title="เปิด/ปิด แถบเมนูลัดนำทางด้านข้าง">
+            <i class="fa-solid fa-compass text-emerald-700"></i>
+            <span data-i18n="quickNavTitle">Quick Nav</span>
+          </button>
         </div>
       </div>
 
@@ -1668,6 +1764,95 @@
       <!-- FOOTER METADATA (Advanced Only) -->
       <div id="analysis-metadata-footer" class="dashboard-advanced-only hidden"></div>
 
+      <!-- QUICK NAVIGATION FLOATING SIDE MENU (Advanced Mode Only) -->
+      <aside id="quick-nav-sidebar" class="dashboard-advanced-only hidden fixed right-3.5 sm:right-5 top-24 z-40 flex flex-col items-end transition-all duration-300 pointer-events-none no-print" aria-label="Dashboard Quick Navigation">
+        
+        <!-- Minimized Floating Pill Trigger (shown when collapsed) -->
+        <button id="quick-nav-collapsed-btn" class="pointer-events-auto hidden items-center gap-2 px-3.5 py-2.5 bg-white/95 text-slate-700 hover:text-emerald-800 rounded-full border border-slate-200/90 shadow-lg hover:shadow-xl backdrop-blur-md transition group text-xs font-bold" title="เปิดเมนูลัดนำทาง (Quick Navigation)">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <i class="fa-solid fa-compass text-emerald-600 text-sm group-hover:rotate-45 transition-transform duration-300"></i>
+          <span class="hidden sm:inline" data-i18n="quickNavTitle">Quick Nav</span>
+          <i class="fa-solid fa-chevron-left text-[10px] text-slate-400 group-hover:text-emerald-600"></i>
+        </button>
+
+        <!-- Expanded Quick Nav Card (shown when expanded) -->
+        <div id="quick-nav-card" class="pointer-events-auto w-56 sm:w-60 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl p-3 flex flex-col max-h-[calc(100vh-7.5rem)] transition-all duration-300">
+          
+          <!-- Card Header -->
+          <div class="flex items-center justify-between pb-2.5 mb-1.5 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-compass"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-800" data-i18n="quickNavTitle">Quick Navigation</h4>
+                <p class="text-[10px] text-slate-400" data-i18n="quickNavSub">Jump to section</p>
+              </div>
+            </div>
+            
+            <button id="btn-collapse-quick-nav" class="w-6 h-6 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center text-xs transition" title="ย่อเมนู (Collapse)">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <!-- Nav Items List -->
+          <nav class="flex-1 overflow-y-auto space-y-0.5 pr-1 py-1 text-xs select-none" id="quick-nav-items-container">
+            <button data-jump-target="kpi-cards-grid" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-chart-pie w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavKpi">1. สรุปตัวชี้วัด (KPIs)</span>
+            </button>
+
+            <button data-jump-target="advanced-filters-toolbar" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-filter w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavFilters">2. ตัวกรองข้อมูล (Filters)</span>
+            </button>
+
+            <button data-jump-target="main-trend-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-chart-line w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavTrend">3. กราฟแนวโน้ม (Trends)</span>
+            </button>
+
+            <button data-jump-target="age-small-multiples-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-users w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavAgeMultiples">4. 6 กลุ่มอายุ (Age Strata)</span>
+            </button>
+
+            <button data-jump-target="sex-and-j-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-venus-mars w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavSexJ">5. เพศและรหัส J (Sex & J)</span>
+            </button>
+
+            <button data-jump-target="icd-composition-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-bars-staggered w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavIcd">6. กลุ่มโรค ICD-10</span>
+            </button>
+
+            <button data-jump-target="age-sex-tables-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-table w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavTables">7. ตารางจำแนกอายุ-เพศ</span>
+            </button>
+
+            <button data-jump-target="seasonal-and-demog-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-cloud-sun-rain w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavSeasonal">8. ฤดูกาลและประชากร</span>
+            </button>
+
+            <button data-jump-target="scientific-notes-card" class="quick-nav-item w-full px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-left text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition">
+              <i class="fa-solid fa-book-bookmark w-4 text-center text-[11px] text-slate-400"></i>
+              <span class="truncate" data-i18n="quickNavNotes">9. ข้อพิจารณาทางวิชาการ</span>
+            </button>
+          </nav>
+
+          <!-- Back to Top Button -->
+          <div class="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
+            <button id="btn-quick-nav-top" class="w-full px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrow-up text-[10px]"></i>
+              <span data-i18n="quickNavTop">กลับขึ้นด้านบนสุด</span>
+            </button>
+          </div>
+
+        </div>
+      </aside>
     </div>
 
     <!-- APPLICATION GLOBAL FOOTER -->
