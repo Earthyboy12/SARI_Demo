@@ -18,9 +18,73 @@ import {
   exportSurveillanceReportDocx
 } from "./utils/exportUtils.js";
 
+export const AVAILABLE_THEMES = {
+  emerald: {
+    id: "emerald",
+    name: "Emerald DDC",
+    nameTh: "Emerald DDC (กรมควบคุมโรค)",
+    dotColor: "#34d399",
+    primary: "#059669",
+    primaryLight: "rgba(5, 150, 105, 0.15)",
+    accent: "#0f766e",
+    chartPalette: {
+      eligible: "#64748b",
+      jcodes: "#2563eb",
+      sari: "#059669",
+      sariFill: "rgba(5, 150, 105, 0.15)"
+    }
+  },
+  sapphire: {
+    id: "sapphire",
+    name: "Sapphire Clinical",
+    nameTh: "Sapphire Clinical (มาตรฐานสากล)",
+    dotColor: "#60a5fa",
+    primary: "#1d4ed8",
+    primaryLight: "rgba(29, 78, 216, 0.15)",
+    accent: "#0284c7",
+    chartPalette: {
+      eligible: "#64748b",
+      jcodes: "#0284c7",
+      sari: "#1d4ed8",
+      sariFill: "rgba(29, 78, 216, 0.15)"
+    }
+  },
+  midnight: {
+    id: "midnight",
+    name: "Midnight Executive",
+    nameTh: "Midnight Executive (โหมดมืด)",
+    dotColor: "#22d3ee",
+    primary: "#34d399",
+    primaryLight: "rgba(52, 211, 153, 0.22)",
+    accent: "#38bdf8",
+    chartPalette: {
+      eligible: "#38bdf8",
+      jcodes: "#818cf8",
+      sari: "#34d399",
+      sariFill: "rgba(52, 211, 153, 0.22)"
+    }
+  },
+  amethyst: {
+    id: "amethyst",
+    name: "Amethyst Royal",
+    nameTh: "Amethyst Royal (สถาบันการแพทย์)",
+    dotColor: "#c084fc",
+    primary: "#7c3aed",
+    primaryLight: "rgba(124, 58, 237, 0.15)",
+    accent: "#6366f1",
+    chartPalette: {
+      eligible: "#64748b",
+      jcodes: "#0284c7",
+      sari: "#7c3aed",
+      sariFill: "rgba(124, 58, 237, 0.15)"
+    }
+  }
+};
+
 // Global Application State
 export const state = {
   lang: "th", // "th" | "en"
+  theme: (typeof localStorage !== "undefined" && localStorage.getItem("sari_theme")) || "emerald",
   view: "upload", // "upload" | "mapping" | "dashboard"
   dashboardMode: "simplified", // "simplified" | "advanced"
   rawData: [],
@@ -76,8 +140,59 @@ export function t(key) {
   return dict[key] || TRANSLATIONS.en[key] || key;
 }
 
+export function setTheme(themeId) {
+  if (!AVAILABLE_THEMES[themeId]) themeId = "emerald";
+  state.theme = themeId;
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem("sari_theme", themeId);
+    } catch (e) {}
+  }
+
+  if (typeof document !== "undefined") {
+    document.documentElement.setAttribute("data-theme", themeId);
+    
+    // Update theme indicator dot
+    const dot = document.getElementById("theme-indicator-dot");
+    if (dot) {
+      dot.style.backgroundColor = AVAILABLE_THEMES[themeId].dotColor;
+      dot.style.boxShadow = `0 0 10px ${AVAILABLE_THEMES[themeId].dotColor}`;
+    }
+
+    // Update current theme label
+    const label = document.getElementById("current-theme-label");
+    if (label) {
+      label.textContent = state.lang === "th" ? AVAILABLE_THEMES[themeId].nameTh : AVAILABLE_THEMES[themeId].name;
+    }
+
+    // Update active checkmarks in menu
+    document.querySelectorAll(".theme-check").forEach((el) => {
+      if (el.getAttribute("data-theme-check") === themeId) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    });
+
+    // Update showcase pills if present
+    document.querySelectorAll(".theme-pill-btn").forEach((btn) => {
+      if (btn.getAttribute("data-set-theme") === themeId) {
+        btn.classList.add("ring-2", "ring-white", "scale-105");
+      } else {
+        btn.classList.remove("ring-2", "ring-white", "scale-105");
+      }
+    });
+
+    // If dashboard is currently active, refresh panels so colors and charts match theme
+    if (state.aggregatedResults && state.view === "dashboard") {
+      renderDashboardPanels();
+    }
+  }
+}
+
 export function initApp() {
   bindEvents();
+  setTheme(state.theme);
   updateStaticTexts();
   renderApp();
 }
@@ -240,6 +355,11 @@ function updateLanguageUI() {
   const modeTip = document.getElementById("mode-tip-text");
   if (modeTip) {
     modeTip.textContent = state.dashboardMode === "advanced" ? t("modeAdvancedTip") : t("modeSimplifyTip");
+  }
+
+  const themeLabel = document.getElementById("current-theme-label");
+  if (themeLabel && AVAILABLE_THEMES[state.theme]) {
+    themeLabel.textContent = state.lang === "th" ? AVAILABLE_THEMES[state.theme].nameTh : AVAILABLE_THEMES[state.theme].name;
   }
 
   if (state.view === "dashboard" && state.aggregatedResults && state.dashboardMode === "simplified") {
@@ -506,6 +626,32 @@ function bindEvents() {
   });
   document.getElementById("btn-export-j-non-j-png")?.addEventListener("click", () => {
     downloadCanvasAsPNG(document.getElementById("chart-j-vs-non-j"), "SARI_J_vs_NonJ_Contribution.png");
+  });
+
+  // Theme Dropdown Toggle & Outside Click
+  const btnThemeDropdown = document.getElementById("btn-theme-dropdown");
+  const themeDropdownMenu = document.getElementById("theme-dropdown-menu");
+  if (btnThemeDropdown && themeDropdownMenu) {
+    btnThemeDropdown.addEventListener("click", (e) => {
+      e.stopPropagation();
+      themeDropdownMenu.classList.toggle("hidden");
+    });
+    document.addEventListener("click", (e) => {
+      if (!themeDropdownMenu.contains(e.target) && !btnThemeDropdown.contains(e.target)) {
+        themeDropdownMenu.classList.add("hidden");
+      }
+    });
+  }
+
+  // Theme Selection Click Handlers (Menu items & Showcase pills)
+  document.querySelectorAll("[data-set-theme]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const themeId = btn.getAttribute("data-set-theme");
+      if (themeId) {
+        setTheme(themeId);
+        if (themeDropdownMenu) themeDropdownMenu.classList.add("hidden");
+      }
+    });
   });
 }
 
@@ -1041,12 +1187,15 @@ function renderMainTimeSeriesChart() {
     });
   }
 
+  const themeColors = AVAILABLE_THEMES[state.theme] || AVAILABLE_THEMES.emerald;
+  const isDark = state.theme === "midnight";
+
   if (vis.sari) {
     datasets.push({
       label: t("seriesEstimatedSARI"),
       data: sariData,
-      borderColor: "#059669",
-      backgroundColor: "rgba(5, 150, 105, 0.15)",
+      borderColor: themeColors.primary,
+      backgroundColor: themeColors.primaryLight,
       borderWidth: 3,
       pointRadius: series.length > 50 ? 1 : 3.5,
       fill: true,
@@ -1072,7 +1221,11 @@ function renderMainTimeSeriesChart() {
       plugins: {
         legend: {
           position: "top",
-          labels: { font: { family: "Sarabun, Inter, sans-serif", size: 12 }, usePointStyle: true }
+          labels: {
+            font: { family: "Sarabun, Inter, sans-serif", size: 12 },
+            usePointStyle: true,
+            color: isDark ? "#e2e8f0" : "#334155"
+          }
         },
         tooltip: {
           callbacks: {
@@ -1092,8 +1245,20 @@ function renderMainTimeSeriesChart() {
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 45, maxTicksLimit: 20 } },
-        y: { beginAtZero: true, grid: { color: "#f1f5f9" } }
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 11 },
+            maxRotation: 45,
+            maxTicksLimit: 20,
+            color: isDark ? "#94a3b8" : "#64748b"
+          }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+          ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+        }
       }
     }
   });
@@ -1155,12 +1320,15 @@ function renderAgeGroupSmallMultiples() {
     const sariData = g.weeklySeries.map((w) => Number(w.estimatedSARI.toFixed(2)));
     const jData = g.weeklySeries.map((w) => w.studyJCodes);
 
+    const themeColors = AVAILABLE_THEMES[state.theme] || AVAILABLE_THEMES.emerald;
+    const isDark = state.theme === "midnight";
+
     const datasets = [
       {
         label: "Estimated SARI",
         data: sariData,
-        borderColor: "#059669",
-        backgroundColor: "rgba(5, 150, 105, 0.12)",
+        borderColor: themeColors.primary,
+        backgroundColor: themeColors.primaryLight,
         borderWidth: 2,
         pointRadius: 0,
         fill: true,
@@ -1189,8 +1357,24 @@ function renderAgeGroupSmallMultiples() {
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } },
         scales: {
-          x: { display: idx >= 3, ticks: { maxTicksLimit: 6, font: { size: 10 } } },
-          y: { beginAtZero: true, max: sharedY ? globalMax : undefined, ticks: { font: { size: 10 }, maxTicksLimit: 4 } }
+          x: {
+            display: idx >= 3,
+            ticks: {
+              maxTicksLimit: 6,
+              font: { size: 10 },
+              color: isDark ? "#94a3b8" : "#64748b"
+            }
+          },
+          y: {
+            beginAtZero: true,
+            max: sharedY ? globalMax : undefined,
+            grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+            ticks: {
+              font: { size: 10 },
+              maxTicksLimit: 4,
+              color: isDark ? "#94a3b8" : "#64748b"
+            }
+          }
         }
       }
     });
@@ -1204,6 +1388,7 @@ function renderSexChart() {
   if (!container || typeof Chart === "undefined") return;
 
   const isSplit = state.chartPreferences.sexLayout === "split";
+  const isDark = state.theme === "midnight";
   const series = state.aggregatedResults.weeklySeries;
   const labels = series.map((s) => s.label);
 
@@ -1246,10 +1431,28 @@ function renderSexChart() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "top", labels: { usePointStyle: true } } },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              usePointStyle: true,
+              color: isDark ? "#e2e8f0" : "#334155"
+            }
+          }
+        },
         scales: {
-          x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } },
-          y: { beginAtZero: true }
+          x: {
+            grid: { display: false },
+            ticks: {
+              maxTicksLimit: 12,
+              color: isDark ? "#94a3b8" : "#64748b"
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+            ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+          }
         }
       }
     });
@@ -1290,7 +1493,14 @@ function renderSexChart() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true } }
+        scales: {
+          x: { ticks: { maxTicksLimit: 8, color: isDark ? "#94a3b8" : "#64748b" } },
+          y: {
+            beginAtZero: true,
+            grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+            ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+          }
+        }
       }
     });
 
@@ -1313,7 +1523,14 @@ function renderSexChart() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true } }
+        scales: {
+          x: { ticks: { maxTicksLimit: 8, color: isDark ? "#94a3b8" : "#64748b" } },
+          y: {
+            beginAtZero: true,
+            grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+            ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+          }
+        }
       }
     });
   }
@@ -1429,10 +1646,12 @@ function renderICDCompositionChart() {
 
   const isAdmissions = state.chartPreferences.icdMetric === "admissions";
   const items = state.aggregatedResults.icdComposition;
+  const themeColors = AVAILABLE_THEMES[state.theme] || AVAILABLE_THEMES.emerald;
+  const isDark = state.theme === "midnight";
 
   const labels = items.map((i) => i.category);
   const data = items.map((i) => isAdmissions ? i.admissions : Number(i.estimatedSARI.toFixed(2)));
-  const bgColors = items.map((i) => (i.isStudyJCode ? "rgba(5, 150, 105, 0.88)" : "rgba(15, 118, 110, 0.75)"));
+  const bgColors = items.map((i) => (i.isStudyJCode ? themeColors.primary : themeColors.accent));
 
   if (state.activeCharts.icd) {
     state.activeCharts.icd.destroy();
@@ -1469,8 +1688,17 @@ function renderICDCompositionChart() {
         }
       },
       scales: {
-        x: { beginAtZero: true, grid: { color: "#f1f5f9" } },
-        y: { ticks: { font: { family: "Sarabun, Inter, sans-serif", size: 11 } } }
+        x: {
+          beginAtZero: true,
+          grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+          ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+        },
+        y: {
+          ticks: {
+            font: { family: "Sarabun, Inter, sans-serif", size: 11 },
+            color: isDark ? "#cbd5e1" : "#334155"
+          }
+        }
       }
     }
   });
@@ -1481,6 +1709,9 @@ function renderJVsNonJChart() {
   if (!canvas || typeof Chart === "undefined") return;
 
   const k = state.aggregatedResults.kpis;
+  const themeColors = AVAILABLE_THEMES[state.theme] || AVAILABLE_THEMES.emerald;
+  const isDark = state.theme === "midnight";
+
   const labels = [
     state.lang === "th" ? "การรับรักษาเข้าเกณฑ์ (Admissions)" : "Eligible Admissions",
     state.lang === "th" ? "SARI ประมาณการ (Estimated SARI)" : "Estimated SARI"
@@ -1505,7 +1736,7 @@ function renderJVsNonJChart() {
         {
           label: state.lang === "th" ? "รหัสกลุ่ม J ที่เข้าเกณฑ์ศึกษา" : "Study J-code Diagnoses",
           data: [Number(jPctAdmissions.toFixed(1)), Number(jPctSARI.toFixed(1))],
-          backgroundColor: "#059669",
+          backgroundColor: themeColors.primary,
           stack: "Stack 0"
         },
         {
@@ -1520,11 +1751,28 @@ function renderJVsNonJChart() {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { stacked: true },
-        y: { stacked: true, max: 100, ticks: { callback: (v) => `${v}%` } }
+        x: {
+          stacked: true,
+          ticks: { color: isDark ? "#94a3b8" : "#64748b" }
+        },
+        y: {
+          stacked: true,
+          max: 100,
+          grid: { color: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9" },
+          ticks: {
+            color: isDark ? "#94a3b8" : "#64748b",
+            callback: (v) => `${v}%`
+          }
+        }
       },
       plugins: {
-        legend: { position: "top", labels: { usePointStyle: true } },
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            color: isDark ? "#e2e8f0" : "#334155"
+          }
+        },
         tooltip: {
           callbacks: {
             afterBody: (ctxArr) => {

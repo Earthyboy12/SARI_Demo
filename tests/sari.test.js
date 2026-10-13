@@ -468,6 +468,57 @@ async function runTests() {
     assert.doesNotThrow(() => toggleGuideCollapse());
   });
 
+  console.log("\n[10] Testing Premium Theme Engine & Customization:");
+
+  await test("Theme translation keys exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const themeKeys = [
+      "themeSelectorLabel", "themeMenuTitle", "themeQuickSelectLabel",
+      "themeEmerald", "themeEmeraldDesc",
+      "themeSapphire", "themeSapphireDesc",
+      "themeMidnight", "themeMidnightDesc",
+      "themeAmethyst", "themeAmethystDesc"
+    ];
+    for (const key of themeKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("AVAILABLE_THEMES contains all 4 themes with required color configurations", async () => {
+    const { AVAILABLE_THEMES } = await import("../src/app.js");
+    assert(AVAILABLE_THEMES, "AVAILABLE_THEMES must be exported");
+    const expectedThemes = ["emerald", "sapphire", "midnight", "amethyst"];
+    for (const id of expectedThemes) {
+      assert(AVAILABLE_THEMES[id], `Missing theme definition for ${id}`);
+      assert(AVAILABLE_THEMES[id].name, `Theme ${id} must have name`);
+      assert(AVAILABLE_THEMES[id].nameTh, `Theme ${id} must have nameTh`);
+      assert(AVAILABLE_THEMES[id].primary, `Theme ${id} must have primary color`);
+      assert(AVAILABLE_THEMES[id].dotColor, `Theme ${id} must have dotColor`);
+    }
+  });
+
+  await test("setTheme() function safely switches theme and updates state", async () => {
+    const { state, setTheme } = await import("../src/app.js");
+    assert.strictEqual(typeof setTheme, "function");
+
+    // Switching to sapphire
+    setTheme("sapphire");
+    assert.strictEqual(state.theme, "sapphire");
+
+    // Switching to midnight
+    setTheme("midnight");
+    assert.strictEqual(state.theme, "midnight");
+
+    // Switching to amethyst
+    setTheme("amethyst");
+    assert.strictEqual(state.theme, "amethyst");
+
+    // Fallback to emerald on invalid theme id
+    setTheme("unknown_theme");
+    assert.strictEqual(state.theme, "emerald");
+  });
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

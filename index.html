@@ -105,6 +105,214 @@
       font-size: 2.25rem !important; /* 36px */
       line-height: 2.55rem !important;
     }
+
+    /* ========================================================
+       PREMIUM THEME SYSTEM & ELEVATED VISUAL TOKENS
+       ======================================================== */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+
+    /* KPI Cards Hover Elevation */
+    .kpi-card {
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+      position: relative;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2.5px);
+      box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+    }
+
+    /* THEME 1: Emerald DDC (Default) */
+    :root, [data-theme="emerald"] {
+      --th-header-bg: linear-gradient(135deg, #022c1b 0%, #064e3b 50%, #043825 100%);
+      --th-header-border: rgba(16, 185, 129, 0.3);
+      --th-hero-bg: linear-gradient(135deg, #064e3b 0%, #043825 50%, #022316 100%);
+      --th-hero-border: rgba(16, 185, 129, 0.3);
+      --th-btn-primary: linear-gradient(135deg, #047857 0%, #0d9488 50%, #065f46 100%);
+      --th-btn-hero: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+      --th-accent: #059669;
+    }
+
+    /* THEME 2: Sapphire Clinical (CDC / WHO Intelligence) */
+    [data-theme="sapphire"] {
+      --th-header-bg: linear-gradient(135deg, #09132b 0%, #172554 45%, #1e3a8a 100%);
+      --th-header-border: rgba(59, 130, 246, 0.35);
+      --th-hero-bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #172554 100%);
+      --th-hero-border: rgba(59, 130, 246, 0.35);
+      --th-btn-primary: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #1e40af 100%);
+      --th-btn-hero: linear-gradient(135deg, #60a5fa 0%, #38bdf8 100%);
+      --th-accent: #2563eb;
+    }
+    [data-theme="sapphire"] header {
+      background: var(--th-header-bg) !important;
+      border-color: var(--th-header-border) !important;
+      box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.25) !important;
+    }
+    [data-theme="sapphire"] #hero-banner {
+      background: var(--th-hero-bg) !important;
+      border-color: var(--th-hero-border) !important;
+    }
+    [data-theme="sapphire"] #btn-run-analysis,
+    [data-theme="sapphire"] #btn-generate-report,
+    [data-theme="sapphire"] #btn-export-excel {
+      background: var(--th-btn-primary) !important;
+    }
+    [data-theme="sapphire"] #btn-mode-simplify {
+      background-color: #1d4ed8 !important;
+    }
+    [data-theme="sapphire"] #btn-try-demo {
+      background: var(--th-btn-hero) !important;
+      color: #0c4a6e !important;
+    }
+    [data-theme="sapphire"] #upload-dropzone {
+      border-color: #93c5fd !important;
+    }
+    [data-theme="sapphire"] #upload-dropzone:hover {
+      border-color: #2563eb !important;
+      background-color: rgba(239, 246, 255, 0.6) !important;
+    }
+
+    /* THEME 3: Midnight Executive (Dark Mode High-Tech) */
+    [data-theme="midnight"] {
+      --th-header-bg: linear-gradient(135deg, #020617 0%, #0b1120 50%, #0f172a 100%);
+      --th-header-border: rgba(51, 65, 85, 0.8);
+      --th-hero-bg: linear-gradient(135deg, #0b1120 0%, #1e293b 60%, #0f172a 100%);
+      --th-hero-border: rgba(51, 65, 85, 0.8);
+      --th-btn-primary: linear-gradient(135deg, #059669 0%, #0891b2 50%, #0f766e 100%);
+      --th-btn-hero: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      --th-accent: #34d399;
+    }
+    [data-theme="midnight"] html,
+    [data-theme="midnight"] body {
+      background-color: #0b1120 !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="midnight"] header {
+      background: var(--th-header-bg) !important;
+      border-color: var(--th-header-border) !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+    }
+    [data-theme="midnight"] #hero-banner {
+      background: var(--th-hero-bg) !important;
+      border-color: var(--th-hero-border) !important;
+    }
+    [data-theme="midnight"] .bg-white {
+      background-color: #111c33 !important;
+      border-color: #1e293b !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+    }
+    [data-theme="midnight"] .bg-slate-50,
+    [data-theme="midnight"] .bg-emerald-50,
+    [data-theme="midnight"] .bg-amber-50,
+    [data-theme="midnight"] .bg-blue-50 {
+      background-color: #162442 !important;
+      border-color: #223354 !important;
+    }
+    [data-theme="midnight"] .text-slate-900,
+    [data-theme="midnight"] .text-slate-800,
+    [data-theme="midnight"] .text-slate-700 {
+      color: #f8fafc !important;
+    }
+    [data-theme="midnight"] .text-slate-600,
+    [data-theme="midnight"] .text-slate-500 {
+      color: #94a3b8 !important;
+    }
+    [data-theme="midnight"] .border-slate-200,
+    [data-theme="midnight"] .border-slate-300 {
+      border-color: #1e293b !important;
+    }
+    [data-theme="midnight"] input,
+    [data-theme="midnight"] select {
+      background-color: #0b1324 !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="midnight"] table thead,
+    [data-theme="midnight"] table th {
+      background-color: #0f172a !important;
+      color: #f1f5f9 !important;
+      border-color: #1e293b !important;
+    }
+    [data-theme="midnight"] table td {
+      border-color: #1e293b !important;
+      color: #cbd5e1 !important;
+    }
+    [data-theme="midnight"] #upload-dropzone {
+      background-color: #111c33 !important;
+      border-color: #334155 !important;
+    }
+    [data-theme="midnight"] #upload-dropzone:hover {
+      border-color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.05) !important;
+    }
+    [data-theme="midnight"] #theme-dropdown-menu {
+      background-color: #0f172a !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+    [data-theme="midnight"] .theme-option-btn:hover {
+      background-color: #1e293b !important;
+    }
+    [data-theme="midnight"] #kpi-sari-val {
+      color: #34d399 !important;
+      text-shadow: 0 0 15px rgba(52, 211, 153, 0.35);
+    }
+    [data-theme="midnight"] #btn-try-demo {
+      background: var(--th-btn-hero) !important;
+      color: #022c1b !important;
+    }
+
+    /* THEME 4: Amethyst Royal (Academic Medical Center) */
+    [data-theme="amethyst"] {
+      --th-header-bg: linear-gradient(135deg, #18092e 0%, #3b0764 45%, #4c1d95 100%);
+      --th-header-border: rgba(168, 85, 247, 0.35);
+      --th-hero-bg: linear-gradient(135deg, #2e1065 0%, #4c1d95 55%, #1e1035 100%);
+      --th-hero-border: rgba(168, 85, 247, 0.35);
+      --th-btn-primary: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #5b21b6 100%);
+      --th-btn-hero: linear-gradient(135deg, #c084fc 0%, #e879f9 100%);
+      --th-accent: #7c3aed;
+    }
+    [data-theme="amethyst"] header {
+      background: var(--th-header-bg) !important;
+      border-color: var(--th-header-border) !important;
+      box-shadow: 0 10px 25px -5px rgba(76, 29, 149, 0.25) !important;
+    }
+    [data-theme="amethyst"] #hero-banner {
+      background: var(--th-hero-bg) !important;
+      border-color: var(--th-hero-border) !important;
+    }
+    [data-theme="amethyst"] #btn-run-analysis,
+    [data-theme="amethyst"] #btn-generate-report,
+    [data-theme="amethyst"] #btn-export-excel {
+      background: var(--th-btn-primary) !important;
+    }
+    [data-theme="amethyst"] #btn-mode-simplify {
+      background-color: #7c3aed !important;
+    }
+    [data-theme="amethyst"] #btn-try-demo {
+      background: var(--th-btn-hero) !important;
+      color: #3b0764 !important;
+    }
+    [data-theme="amethyst"] #upload-dropzone {
+      border-color: #d8b4fe !important;
+    }
+    [data-theme="amethyst"] #upload-dropzone:hover {
+      border-color: #9333ea !important;
+      background-color: rgba(250, 245, 255, 0.6) !important;
+    }
     @media print {
       @page {
         size: A4 portrait;
@@ -273,6 +481,89 @@
             </button>
           </div>
 
+          <!-- Theme Selector Dropdown -->
+          <div class="relative" id="theme-selector-container">
+            <button id="btn-theme-dropdown" class="px-3 py-1.5 text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 rounded-lg border border-emerald-600/50 shadow-xs transition flex items-center gap-1.5" title="เลือกธีมการแสดงผล / Select Theme">
+              <span id="theme-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+              <i class="fa-solid fa-palette text-emerald-300 text-[11px]"></i>
+              <span id="current-theme-label" class="hidden sm:inline font-medium text-[12px]">Emerald DDC</span>
+              <i class="fa-solid fa-chevron-down text-[9px] text-emerald-300/80 ml-0.5"></i>
+            </button>
+
+            <!-- Floating Popover Dropdown Menu -->
+            <div id="theme-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 rounded-2xl bg-white shadow-2xl border border-slate-200/90 p-2 z-50 text-slate-800">
+              <div class="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <i class="fa-solid fa-swatchbook text-emerald-600"></i>
+                  <span data-i18n="themeMenuTitle">ธีมการแสดงผล (Themes)</span>
+                </span>
+                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Themes</span>
+              </div>
+              
+              <div class="py-1 space-y-1">
+                <!-- Theme 1: Emerald DDC -->
+                <button data-set-theme="emerald" class="theme-option-btn w-full px-3 py-2.5 rounded-xl flex items-center justify-between hover:bg-emerald-50 transition text-left group">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-xs flex-shrink-0"></span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-emerald-800 flex items-center gap-1">
+                        <span>Emerald DDC</span>
+                        <span class="text-[9px] px-1 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">Official</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500" data-i18n="themeEmeraldDesc">เขียวระบาดวิทยา กรมควบคุมโรค</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-check text-emerald-600 text-xs theme-check" data-theme-check="emerald"></i>
+                </button>
+
+                <!-- Theme 2: Sapphire Clinical -->
+                <button data-set-theme="sapphire" class="theme-option-btn w-full px-3 py-2.5 rounded-xl flex items-center justify-between hover:bg-blue-50 transition text-left group">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 shadow-xs flex-shrink-0"></span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-blue-800 flex items-center gap-1">
+                        <span>Sapphire Clinical</span>
+                        <span class="text-[9px] px-1 py-0.2 bg-blue-100 text-blue-800 rounded font-bold">CDC/WHO</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500" data-i18n="themeSapphireDesc">น้ำเงินรอยัลบลู สไตล์สถาบันสากล</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-check text-blue-600 text-xs theme-check hidden" data-theme-check="sapphire"></i>
+                </button>
+
+                <!-- Theme 3: Midnight Executive -->
+                <button data-set-theme="midnight" class="theme-option-btn w-full px-3 py-2.5 rounded-xl flex items-center justify-between hover:bg-slate-100 transition text-left group">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-teal-400 shadow-xs flex-shrink-0"></span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-slate-900 flex items-center gap-1">
+                        <span>Midnight Executive</span>
+                        <span class="text-[9px] px-1 py-0.2 bg-slate-200 text-slate-800 rounded font-bold">Dark</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500" data-i18n="themeMidnightDesc">โหมดมืดพรีเมียม ถนอมสายตา ไฮคอนทราสต์</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-check text-slate-900 text-xs theme-check hidden" data-theme-check="midnight"></i>
+                </button>
+
+                <!-- Theme 4: Amethyst Royal -->
+                <button data-set-theme="amethyst" class="theme-option-btn w-full px-3 py-2.5 rounded-xl flex items-center justify-between hover:bg-purple-50 transition text-left group">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 shadow-xs flex-shrink-0"></span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-purple-800 flex items-center gap-1">
+                        <span>Amethyst Royal</span>
+                        <span class="text-[9px] px-1 py-0.2 bg-purple-100 text-purple-800 rounded font-bold">Royal</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500" data-i18n="themeAmethystDesc">ม่วงรอยัล เรียบหรู โรงพยาบาลมหาวิทยาลัย</div>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-check text-purple-600 text-xs theme-check hidden" data-theme-check="amethyst"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Data Extraction Guide Button -->
           <button id="btn-open-data-guide" class="px-3 py-1.5 text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 rounded-lg border border-emerald-600/50 shadow-xs transition flex items-center gap-1.5" title="คู่มือการดึงข้อมูลและรายการรหัส ICD-10">
             <i class="fa-solid fa-book-medical text-emerald-300"></i>
@@ -315,7 +606,7 @@
     <div id="view-upload" class="space-y-6">
       
       <!-- Epidemiological Hero / Context Card -->
-      <div class="bg-gradient-to-br from-[#064e3b] via-[#043825] to-[#022316] text-white rounded-2xl p-8 sm:p-10 shadow-xl relative overflow-hidden border border-emerald-600/30">
+      <div id="hero-banner" class="bg-gradient-to-br from-[#064e3b] via-[#043825] to-[#022316] text-white rounded-2xl p-8 sm:p-10 shadow-xl relative overflow-hidden border border-emerald-600/30">
         <!-- Glowing Ambient Lighting -->
         <div class="absolute -right-12 -bottom-12 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -left-12 -top-12 w-72 h-72 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -362,6 +653,32 @@
               <i class="fa-solid fa-file-excel text-emerald-300"></i>
               <span data-i18n="downloadTemplateXlsx">Download Excel Template</span>
             </button>
+          </div>
+
+          <!-- Theme Preview Quick-Select Strip -->
+          <div class="mt-6 pt-5 border-t border-white/15 flex flex-wrap items-center gap-2.5 text-xs text-white/90">
+            <span class="font-bold flex items-center gap-1.5 text-emerald-200">
+              <i class="fa-solid fa-palette text-amber-300"></i>
+              <span data-i18n="themeQuickSelectLabel">เลือกลองธีมการแสดงผล (Preview Themes):</span>
+            </span>
+            <div class="inline-flex flex-wrap items-center gap-1.5">
+              <button data-set-theme="emerald" class="theme-pill-btn px-3 py-1.5 rounded-lg bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-400/40 text-white font-medium flex items-center gap-1.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
+                <span>Emerald DDC</span>
+              </button>
+              <button data-set-theme="sapphire" class="theme-pill-btn px-3 py-1.5 rounded-lg bg-blue-500/25 hover:bg-blue-500/40 border border-blue-400/40 text-white font-medium flex items-center gap-1.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-xs"></span>
+                <span>Sapphire Clinical</span>
+              </button>
+              <button data-set-theme="midnight" class="theme-pill-btn px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-500/40 text-white font-medium flex items-center gap-1.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-xs"></span>
+                <span>Midnight Dark</span>
+              </button>
+              <button data-set-theme="amethyst" class="theme-pill-btn px-3 py-1.5 rounded-lg bg-purple-500/25 hover:bg-purple-500/40 border border-purple-400/40 text-white font-medium flex items-center gap-1.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-xs"></span>
+                <span>Amethyst Royal</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -881,7 +1198,7 @@
       <div id="kpi-cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         
         <!-- Card 1: Total Uploaded -->
-        <div id="kpi-card-total" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-total" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-slate-400 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiTotalUploaded">
             Total Admissions
           </span>
@@ -892,7 +1209,7 @@
         </div>
 
         <!-- Card 2: Eligible Admissions -->
-        <div id="kpi-card-eligible" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-eligible" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-indigo-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiEligibleAdmissions">
             Study-Eligible
           </span>
@@ -902,10 +1219,11 @@
           </div>
         </div>
 
-        <!-- Card 3: Estimated SARI (DDC Emerald Hero KPI Card) -->
-        <div id="kpi-card-sari" class="bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 shadow-xs flex flex-col justify-between relative overflow-hidden">
+        <!-- Card 3: Estimated SARI (Hero KPI Card) -->
+        <div id="kpi-card-sari" class="kpi-card bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div class="flex items-center justify-between">
-            <span class="text-xs sm:text-sm font-black text-emerald-950 uppercase tracking-wide" data-i18n="kpiEstimatedSARI">
+            <span class="text-xs sm:text-sm font-black text-emerald-950 uppercase tracking-wide flex items-center gap-1.5" data-i18n="kpiEstimatedSARI">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Estimated SARI
             </span>
             <i class="fa-solid fa-lungs-virus text-emerald-600 text-base sm:text-lg"></i>
@@ -917,7 +1235,7 @@
         </div>
 
         <!-- Card 4: Study J-codes (Advanced Only) -->
-        <div id="kpi-card-jcodes" class="dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-jcodes" class="kpi-card dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-blue-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiStudyJCodes">
             Study J-codes
           </span>
@@ -928,7 +1246,7 @@
         </div>
 
         <!-- Card 5: Estimated SARI from J-codes (Advanced Only) -->
-        <div id="kpi-card-sari-j" class="dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-sari-j" class="kpi-card dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-cyan-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromJ">
             SARI from J-codes
           </span>
@@ -939,7 +1257,7 @@
         </div>
 
         <!-- Card 6: Estimated SARI from Non-J -->
-        <div id="kpi-card-sari-nonj" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-sari-nonj" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-teal-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-teal-800 uppercase tracking-wide truncate" data-i18n="kpiSARIFromNonJ">
             SARI from Non-J
           </span>

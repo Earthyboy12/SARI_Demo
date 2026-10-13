@@ -84,6 +84,20 @@ export const TRANSLATIONS = {
     modeAdvanced: "โหมดวิเคราะห์เชิงลึก (Advanced)",
     modeSimplifyTip: "สรุปตัวชี้วัดหลัก กราฟแนวโน้ม และประเด็นสำคัญสำหรับผู้บริหาร",
     modeAdvancedTip: "แสดงการวิเคราะห์แยกกลุ่มอายุ เพศ กลุ่มรหัสโรค ICD-10 ฤดูกาล และการตรวจสอบข้อมูลครบถ้วน",
+    
+    // Themes
+    themeSelectorLabel: "ธีมการแสดงผล",
+    themeMenuTitle: "เลือกธีมระบบ (Dashboard Themes)",
+    themeQuickSelectLabel: "เลือกลองธีมการแสดงผล:",
+    themeEmerald: "Emerald DDC (เขียวระบาดวิทยา)",
+    themeEmeraldDesc: "ธีมมาตรฐาน กรมควบคุมโรค กระทรวงสาธารณสุข",
+    themeSapphire: "Sapphire Clinical (น้ำเงินรอยัลบลู)",
+    themeSapphireDesc: "สไตล์สถาบันวิจัยระดับโลกและศูนย์ระบาดวิทยาสากล (CDC/WHO)",
+    themeMidnight: "Midnight Executive (ดาร์กโหมดพรีเมียม)",
+    themeMidnightDesc: "โหมดมืดพรีเมียม คอนทราสต์สูง สบายตา",
+    themeAmethyst: "Amethyst Royal (ม่วงรอยัล)",
+    themeAmethystDesc: "เรียบหรู สำหรับศูนย์การแพทย์มหาวิทยาลัย/ผู้บริหาร",
+
     executiveInsightsTitle: "บทสรุปสถานการณ์และประเด็นสำคัญสำหรับผู้บริหาร (Executive Insights)",
     executiveInsightsSub: "ข้อค้นพบสำคัญจากแบบจำลองการประมาณการ SARI เพื่อประกอบการตัดสินใจเชิงนโยบายและการบริหารจัดการ",
     ageSummaryTableTitle: "สรุปการกระจายตัวของผู้ป่วย SARI ตาม 6 กลุ่มอายุ (Age-Group Summary)",
@@ -291,6 +305,20 @@ export const TRANSLATIONS = {
     modeAdvanced: "Advanced Mode",
     modeSimplifyTip: "Executive overview with core KPIs, main trend, and key takeaways",
     modeAdvancedTip: "In-depth analytics with age small multiples, sex breakdown, ICD composition, and seasonal tables",
+    
+    // Themes
+    themeSelectorLabel: "Theme",
+    themeMenuTitle: "Dashboard Themes",
+    themeQuickSelectLabel: "Preview Themes:",
+    themeEmerald: "Emerald DDC (Official)",
+    themeEmeraldDesc: "Official Thai DDC surveillance aesthetic",
+    themeSapphire: "Sapphire Clinical (CDC/WHO)",
+    themeSapphireDesc: "High-tech global health & CDC clinical intelligence",
+    themeMidnight: "Midnight Executive (Dark Mode)",
+    themeMidnightDesc: "Ultra-sleek dark mode with glowing accents",
+    themeAmethyst: "Amethyst Royal (Academic)",
+    themeAmethystDesc: "Prestigious university medical center look",
+
     executiveInsightsTitle: "Executive Surveillance Insights & Key Takeaways",
     executiveInsightsSub: "Core epidemiologic findings from the SARI estimation models for clinical and executive decision support",
     ageSummaryTableTitle: "SARI Burden Summary by Age Group",
