@@ -1456,7 +1456,7 @@
           </span>
           <div class="mt-2 sm:mt-3">
             <div id="kpi-sari-j-val" class="text-2xl sm:text-3xl font-black text-slate-800 font-mono tracking-tight">-</div>
-            <div id="kpi-sari-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
+            <div id="kpi-sari-j-sub" class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">-</div>
           </div>
         </div>
 
@@ -1717,6 +1717,16 @@
             <input type="checkbox" id="toggle-line-sari" checked class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer">
             <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
             <span class="font-bold text-emerald-950" data-i18n="lineSARILabel">Estimated SARI</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-cyan-50/70 hover:bg-cyan-100/70 px-3 py-1.5 rounded-lg border border-cyan-300 transition select-none">
+            <input type="checkbox" id="toggle-line-sari-j" class="rounded border-cyan-300 text-cyan-600 focus:ring-cyan-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span>
+            <span class="font-semibold text-cyan-900" data-i18n="lineSARIFromJ">SARI from J-codes</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer bg-teal-50/70 hover:bg-teal-100/70 px-3 py-1.5 rounded-lg border border-teal-300 transition select-none">
+            <input type="checkbox" id="toggle-line-sari-nonj" class="rounded border-teal-300 text-teal-600 focus:ring-teal-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-teal-500 inline-block"></span>
+            <span class="font-semibold text-teal-900" data-i18n="lineSARIFromNonJ">SARI from Non-J</span>
           </label>
 
           <!-- Selected Subgroup Line Toggle (Visible when a subgroup is selected) -->

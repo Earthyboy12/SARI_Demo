@@ -386,6 +386,14 @@ async function runTests() {
 
   console.log("\n[8] Testing Dashboard Modes & Translations:");
 
+  await test("Line toggles for SARI from J and Non-J exist in both Thai and English translations", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    assert(TRANSLATIONS.th.lineSARIFromJ, "Missing th.lineSARIFromJ");
+    assert(TRANSLATIONS.th.lineSARIFromNonJ, "Missing th.lineSARIFromNonJ");
+    assert(TRANSLATIONS.en.lineSARIFromJ, "Missing en.lineSARIFromJ");
+    assert(TRANSLATIONS.en.lineSARIFromNonJ, "Missing en.lineSARIFromNonJ");
+  });
+
   await test("Simplified and Advanced translations exist in both Thai and English", async () => {
     const { TRANSLATIONS } = await import("../src/i18n/translations.js");
     const requiredKeys = [
@@ -414,8 +422,58 @@ async function runTests() {
     assert(html.includes('id="kpi-card-jcodes"'), "Missing J-codes admissions card");
     assert(html.includes('id="kpi-card-sari-j"'), "Missing SARI J card");
     assert(html.includes('id="kpi-card-sari-nonj"'), "Missing SARI Non-J card");
+    assert(html.includes('id="kpi-sari-j-sub"'), "Missing kpi-sari-j-sub distinct subtitle element");
     assert(!html.includes('id="kpi-card-jcodes" class="kpi-card motion-stagger-4 dashboard-advanced-only hidden'), "kpi-card-jcodes must not be hidden in simplified mode");
     assert(!html.includes('id="kpi-card-sari-j" class="kpi-card motion-stagger-5 dashboard-advanced-only hidden'), "kpi-card-sari-j must not be hidden in simplified mode");
+  });
+
+  await test("renderKPICards successfully updates and populates all 6 KPI cards including SARI from J-codes and Non-J", async () => {
+    const { state, renderKPICards } = await import("../src/app.js");
+    const { generateSyntheticSurveillanceData } = await import("../src/utils/demoDataGenerator.js");
+    const { processSurveillanceDataset } = await import("../src/models/sariCalculator.js");
+    const { aggregateSurveillance } = await import("../src/utils/dataAggregator.js");
+
+    const raw = generateSyntheticSurveillanceData().slice(0, 100);
+    const mapping = { admitDateCol: 'admit_date', ageCol: 'age', sexCol: 'sex', icdCol: 'primary_ICD_10' };
+    const processed = processSurveillanceDataset(raw, mapping);
+    const aggregated = aggregateSurveillance(processed.processedRows);
+
+    state.rawData = raw;
+    state.processedDataset = processed;
+    state.aggregatedResults = aggregated;
+    state.motionEnabled = false;
+
+    const cardVals = {};
+    const cardSubs = {};
+
+    globalThis.document = {
+      getElementById: (id) => ({
+        get textContent() { return cardVals[id] || cardSubs[id] || ''; },
+        set textContent(v) {
+          if (id.endsWith('-val')) cardVals[id] = v;
+          else cardSubs[id] = v;
+        }
+      }),
+      querySelectorAll: () => []
+    };
+
+    assert.doesNotThrow(() => renderKPICards());
+
+    assert(cardVals["kpi-total-val"], "kpi-total-val must be populated");
+    assert(cardVals["kpi-eligible-val"], "kpi-eligible-val must be populated");
+    assert(cardVals["kpi-sari-val"], "kpi-sari-val must be populated");
+    assert(cardVals["kpi-jcodes-val"], "kpi-jcodes-val must be populated");
+    assert(cardVals["kpi-sari-j-val"], "kpi-sari-j-val must be populated");
+    assert(cardVals["kpi-sari-nonj-val"], "kpi-sari-nonj-val must be populated");
+
+    assert(cardSubs["kpi-sari-j-sub"], "kpi-sari-j-sub must be populated");
+    assert(cardSubs["kpi-sari-nonj-sub"], "kpi-sari-nonj-sub must be populated");
+
+    const sariTotal = parseFloat(cardVals["kpi-sari-val"]);
+    const sariJ = parseFloat(cardVals["kpi-sari-j-val"]);
+    const sariNonJ = parseFloat(cardVals["kpi-sari-nonj-val"]);
+    assert(Math.abs(sariTotal - (sariJ + sariNonJ)) < 0.2, "Sum of SARI J + SARI Non-J must equal Total SARI");
+    delete globalThis.document;
   });
 
   await test("Facility metadata translation keys exist and updateHospitalInfo sets values properly", async () => {

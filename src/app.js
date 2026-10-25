@@ -130,6 +130,8 @@ export const state = {
       eligible: true,
       jcodes: true,
       sari: true,
+      sariJ: false,
+      sariNonJ: false,
       subgroup: true,
       forecast: true
     }
@@ -730,6 +732,14 @@ function bindEvents() {
   });
   document.getElementById("toggle-line-sari")?.addEventListener("change", (e) => {
     state.chartPreferences.mainSeriesVisible.sari = e.target.checked;
+    renderMainTimeSeriesChart();
+  });
+  document.getElementById("toggle-line-sari-j")?.addEventListener("change", (e) => {
+    state.chartPreferences.mainSeriesVisible.sariJ = e.target.checked;
+    renderMainTimeSeriesChart();
+  });
+  document.getElementById("toggle-line-sari-nonj")?.addEventListener("change", (e) => {
+    state.chartPreferences.mainSeriesVisible.sariNonJ = e.target.checked;
     renderMainTimeSeriesChart();
   });
   document.getElementById("toggle-line-subgroup")?.addEventListener("change", (e) => {
@@ -1408,7 +1418,7 @@ function renderActiveModelBadge() {
   if (descEl) descEl.textContent = tooltipText;
 }
 
-function renderKPICards() {
+export function renderKPICards() {
   const k = state.aggregatedResults.kpis;
   const isFull = state.settings.fullPrecision;
   const decimals = isFull ? 4 : 1;
@@ -1423,8 +1433,8 @@ function renderKPICards() {
   setCard("kpi-eligible-val", "kpi-eligible-sub", k.eligibleAdmissions, `${k.eligiblePercent.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษา" : "of admissions"}`, false);
   setCard("kpi-sari-val", "kpi-sari-sub", k.estimatedSARITotal, `${((k.estimatedSARITotal / (k.eligibleAdmissions || 1)) * 100).toFixed(1)} ${state.lang === "th" ? "ต่อ 100 การรับรักษา" : "per 100 eligible"}`, true);
   setCard("kpi-jcodes-val", "kpi-jcodes-sub", k.studyJCodeAdmissions, `${k.pctJCodeAdmissions.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษาเข้าเกณฑ์" : "of eligible"}`, false);
-  setCard("kpi-sari-j-val", "kpi-sari-j-sub", fmt(k.estimatedSARIJCode), `${(100 - k.pctEstimatedSARIFromNonJ).toFixed(1)}% ${state.lang === "th" ? "ของ SARI ประมาณการ" : "of estimated SARI"}`, true);
-  setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", fmt(k.estimatedSARINonJCode), `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`, true);
+  setCard("kpi-sari-j-val", "kpi-sari-j-sub", k.estimatedSARIJCode, `${(100 - k.pctEstimatedSARIFromNonJ).toFixed(1)}% ${state.lang === "th" ? "ของ SARI ประมาณการ" : "of estimated SARI"}`, true);
+  setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", k.estimatedSARINonJCode, `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`, true);
 }
 
 export function setForecastEnabled(enabled) {
@@ -1462,6 +1472,8 @@ export function renderMainTimeSeriesChart() {
   const chkEligible = document.getElementById("toggle-line-eligible");
   const chkJcodes = document.getElementById("toggle-line-jcodes");
   const chkSari = document.getElementById("toggle-line-sari");
+  const chkSariJ = document.getElementById("toggle-line-sari-j");
+  const chkSariNonJ = document.getElementById("toggle-line-sari-nonj");
   const chkSubgroup = document.getElementById("toggle-line-subgroup");
   const selectSubgroupElem = document.getElementById("select-main-icd-subgroup");
   const pillElem = document.getElementById("main-subgroup-stat-pill");
@@ -1480,6 +1492,8 @@ export function renderMainTimeSeriesChart() {
   if (chkEligible) chkEligible.checked = vis.eligible !== false;
   if (chkJcodes) chkJcodes.checked = vis.jcodes !== false;
   if (chkSari) chkSari.checked = vis.sari !== false;
+  if (chkSariJ) chkSariJ.checked = vis.sariJ === true;
+  if (chkSariNonJ) chkSariNonJ.checked = vis.sariNonJ === true;
   if (chkSubgroup) chkSubgroup.checked = vis.subgroup !== false;
   if (chkForecastEnable) chkForecastEnable.checked = isForecastActive;
   if (selectForecastHorizon) {
@@ -1619,6 +1633,36 @@ export function renderMainTimeSeriesChart() {
       pointRadius: series.length > 50 ? 1 : 3.5,
       fill: true,
       tension: 0.15
+    });
+  }
+
+  // Decomposed SARI from J-codes Line
+  if (vis.sariJ) {
+    const sariJData = series.map((s) => Number((s.estimatedSARIJ || 0).toFixed(2)));
+    datasets.push({
+      label: t("lineSARIFromJ"),
+      data: padData(sariJData),
+      borderColor: "#06b6d4", // Cyan 500
+      backgroundColor: "#06b6d4",
+      borderWidth: 2.5,
+      borderDash: [4, 3],
+      pointRadius: series.length > 50 ? 1 : 3,
+      tension: 0.12
+    });
+  }
+
+  // Decomposed SARI from Non-J Line
+  if (vis.sariNonJ) {
+    const sariNonJData = series.map((s) => Number((s.estimatedSARINonJ || 0).toFixed(2)));
+    datasets.push({
+      label: t("lineSARIFromNonJ"),
+      data: padData(sariNonJData),
+      borderColor: "#14b8a6", // Teal 500
+      backgroundColor: "#14b8a6",
+      borderWidth: 2.5,
+      borderDash: [4, 3],
+      pointRadius: series.length > 50 ? 1 : 3,
+      tension: 0.12
     });
   }
 
