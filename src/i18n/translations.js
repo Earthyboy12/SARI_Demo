@@ -143,6 +143,15 @@ export const TRANSLATIONS = {
 
     // Charts & Sections
     selectLinesLabel: "เลือกเส้นกราฟที่แสดง:",
+    forecastToggleLabel: "พยากรณ์ SARI (Forecast)",
+    forecastHorizonLabel: "ระยะพยากรณ์:",
+    forecastOptAuto: "เท่ากับข้อมูลย้อนหลัง (Auto Dynamic)",
+    forecastOpt6m: "6 เดือน (6 Months)",
+    forecastOpt1y: "1 ปี (1 Year / 12 เดือน)",
+    forecastOpt2y: "2 ปี (2 Years / 24 เดือน)",
+    lineForecastLabel: "SARI คาดการณ์ล่วงหน้า (Forecast SARI)",
+    forecastStatPrefix: "ผลพยากรณ์ SARI ล่วงหน้า",
+    forecastMonthlySeasonDesc: "โมเดล Simple OLS Trend ผสานรอบฤดูกาลรายเดือน (12 Calendar Months)",
     mainIcdSubgroupLabel: "กลุ่มโรคย่อย ICD-10 (Subgroup):",
     optAllIcdGroups: "ทุกกลุ่มโรค (All Diagnostic Groups)",
     lineSubgroupAdmissions: "กลุ่มโรคย่อยที่เลือก (Unweighted N)",
@@ -389,6 +398,15 @@ export const TRANSLATIONS = {
 
     // Charts & Sections
     selectLinesLabel: "Display Lines:",
+    forecastToggleLabel: "Forecast SARI",
+    forecastHorizonLabel: "Horizon:",
+    forecastOptAuto: "Same as Historical Span (Auto Dynamic)",
+    forecastOpt6m: "6 Months",
+    forecastOpt1y: "1 Year (12 Months)",
+    forecastOpt2y: "2 Years (24 Months)",
+    lineForecastLabel: "Forecast SARI (OLS + Monthly Seasonality)",
+    forecastStatPrefix: "Forecast SARI Summary",
+    forecastMonthlySeasonDesc: "Simple OLS Trend + 12-Month Calendar Seasonal Index",
     mainIcdSubgroupLabel: "ICD-10 Subgroup:",
     optAllIcdGroups: "All Diagnostic Groups (Overview)",
     lineSubgroupAdmissions: "Selected Subgroup (Unweighted N)",

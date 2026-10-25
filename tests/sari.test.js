@@ -678,6 +678,106 @@ async function runTests() {
     assert.doesNotThrow(() => animateValue("kpi-sari-val", 42.5, true, 1));
   });
 
+
+  console.log("\n[14] Testing SARI Forecasting Engine & Dynamic Horizon:");
+
+  await test("Forecast translation keys exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const forecastKeys = [
+      "forecastToggleLabel", "forecastHorizonLabel", "forecastOptAuto", "forecastOpt6m",
+      "forecastOpt1y", "forecastOpt2y", "lineForecastLabel", "forecastStatPrefix",
+      "forecastMonthlySeasonDesc"
+    ];
+    for (const key of forecastKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("calculateSARIForecast generates accurate OLS trend and 12-month calendar seasonal forecasts", async () => {
+    const { calculateSARIForecast } = await import("../src/utils/forecastEngine.js");
+
+    // 2 years (24 months) of historical data
+    const monthlySeries = [];
+    for (let y = 2023; y <= 2024; y++) {
+      for (let m = 1; m <= 12; m++) {
+        const isPeak = m >= 6 && m <= 10; // Rainy season peak
+        const sari = 20 + (y - 2023) * 4 + (isPeak ? 15 : 0) + Math.cos(m) * 1.5;
+        monthlySeries.push({
+          key: `${y}-${String(m).padStart(2, "0")}`,
+          year: y,
+          month: m,
+          startDate: `${y}-${String(m).padStart(2, "0")}-01`,
+          labelEn: `M${m} ${y}`,
+          labelTh: `ด${m} ${y + 543}`,
+          estimatedSARI: sari
+        });
+      }
+    }
+
+    // Auto horizon: 24 months input -> 24 months forward forecast
+    const fcstAuto = calculateSARIForecast({
+      series: monthlySeries,
+      timeAggregation: "monthly",
+      horizonOption: "auto"
+    });
+
+    assert(fcstAuto !== null, "Forecast result must not be null");
+    assert.strictEqual(fcstAuto.summary.horizonSteps, 24, "Auto horizon must equal historical 24 months");
+    assert.strictEqual(fcstAuto.forecastPoints.length, 25, "Must have 1 bridge + 24 future points");
+    assert.strictEqual(fcstAuto.forecastPoints[0].isBridge, true, "First point must be bridge point");
+    assert.strictEqual(
+      fcstAuto.forecastPoints[0].predictedSARI,
+      Number(monthlySeries[23].estimatedSARI.toFixed(2)),
+      "Bridge point value must equal last historical value"
+    );
+
+    // Verify non-negative prediction constraint and CI bounds
+    for (const pt of fcstAuto.forecastPoints) {
+      assert(pt.predictedSARI >= 0, "Forecast must be non-negative");
+      assert(pt.lowerCI >= 0, "Lower CI must be non-negative");
+      assert(pt.upperCI >= pt.predictedSARI, "Upper CI must be >= predicted SARI");
+    }
+
+    // 1-Year Horizon: 12 months forward
+    const fcst1y = calculateSARIForecast({
+      series: monthlySeries,
+      timeAggregation: "monthly",
+      horizonOption: "1y"
+    });
+    assert.strictEqual(fcst1y.summary.horizonSteps, 12, "1y horizon must produce 12 steps");
+    assert.strictEqual(fcst1y.forecastPoints.length, 13);
+
+    // 6-Month Horizon: 6 months forward
+    const fcst6m = calculateSARIForecast({
+      series: monthlySeries,
+      timeAggregation: "monthly",
+      horizonOption: "6m"
+    });
+    assert.strictEqual(fcst6m.summary.horizonSteps, 6, "6m horizon must produce 6 steps");
+    assert.strictEqual(fcst6m.forecastPoints.length, 7);
+  });
+
+  await test("App exports setForecastEnabled and setForecastHorizon and safely updates state", async () => {
+    const { state, setForecastEnabled, setForecastHorizon, renderMainTimeSeriesChart } = await import("../src/app.js");
+    assert.strictEqual(typeof setForecastEnabled, "function");
+    assert.strictEqual(typeof setForecastHorizon, "function");
+
+    setForecastEnabled(true);
+    assert.strictEqual(state.chartPreferences.forecastEnabled, true);
+
+    setForecastHorizon("2y");
+    assert.strictEqual(state.chartPreferences.forecastHorizon, "2y");
+
+    setForecastHorizon("auto");
+    assert.strictEqual(state.chartPreferences.forecastHorizon, "auto");
+
+    setForecastEnabled(false);
+    assert.strictEqual(state.chartPreferences.forecastEnabled, false);
+
+    assert.doesNotThrow(() => renderMainTimeSeriesChart());
+  });
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

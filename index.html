@@ -1633,6 +1633,8 @@
             </p>
             <!-- Subgroup Stat Pill (Visible when a subgroup is selected) -->
             <div id="main-subgroup-stat-pill" class="hidden mt-2 text-xs font-medium text-amber-900 bg-amber-50/90 border border-amber-300 px-3 py-1.5 rounded-xl w-fit flex items-center gap-2 shadow-2xs"></div>
+            <!-- Forecast Stat Summary Pill (Visible when forecast is enabled) -->
+            <div id="forecast-stat-pill" class="hidden mt-2 text-xs font-medium text-purple-950 bg-purple-50/90 border border-purple-300 px-3 py-1.5 rounded-xl w-fit flex flex-wrap items-center gap-2 shadow-2xs"></div>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -1656,6 +1658,25 @@
                 <option value="Convulsions, not elsewhere classified">อาการชัก (Convulsions, R56)</option>
                 <option value="Infectious gastroenteritis and colitis, unspecified">กระเพาะและลำไส้อักเสบ (A09)</option>
               </select>
+            </div>
+
+            <!-- Forecast SARI Controls Toolbar -->
+            <div class="flex items-center gap-1.5 bg-purple-50/90 border border-purple-200 rounded-lg px-2.5 py-1 shadow-2xs">
+              <label for="toggle-forecast-enable" class="text-xs font-bold text-purple-900 flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="toggle-forecast-enable" class="rounded border-purple-300 text-purple-600 focus:ring-purple-500 h-3.5 w-3.5 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-[11px]"></i>
+                <span data-i18n="forecastToggleLabel">Forecast SARI</span>
+              </label>
+
+              <div id="container-forecast-horizon" class="hidden flex items-center gap-1 pl-1.5 border-l border-purple-200">
+                <label for="select-forecast-horizon" class="text-[11px] text-purple-700 font-medium whitespace-nowrap" data-i18n="forecastHorizonLabel">ช่วงเวลา:</label>
+                <select id="select-forecast-horizon" class="text-xs bg-white rounded border border-purple-300 py-0.5 px-1.5 font-medium text-purple-900 focus:ring-purple-500 focus:border-purple-500">
+                  <option value="auto" data-i18n="forecastOptAuto">เท่ากับข้อมูลย้อนหลัง (Auto)</option>
+                  <option value="6m" data-i18n="forecastOpt6m">6 เดือน (6 Months)</option>
+                  <option value="1y" data-i18n="forecastOpt1y">1 ปี (1 Year)</option>
+                  <option value="2y" data-i18n="forecastOpt2y">2 ปี (2 Years)</option>
+                </select>
+              </div>
             </div>
 
             <!-- Weekly / Monthly Toggle -->
@@ -1703,6 +1724,13 @@
             <input type="checkbox" id="toggle-line-subgroup" checked class="rounded border-amber-300 text-amber-600 focus:ring-amber-500 h-4 w-4 cursor-pointer">
             <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
             <span id="label-subgroup-line-text" class="font-bold text-amber-950">Subgroup Admissions (Unweighted N)</span>
+          </label>
+
+          <!-- Forecast SARI Line Toggle (Visible when forecast is enabled) -->
+          <label id="container-toggle-forecast" class="hidden inline-flex items-center gap-1.5 cursor-pointer bg-purple-50 hover:bg-purple-100/80 px-3 py-1.5 rounded-lg border border-purple-300 transition select-none">
+            <input type="checkbox" id="toggle-line-forecast" checked class="rounded border-purple-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer">
+            <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span>
+            <span id="label-forecast-line-text" class="font-bold text-purple-950" data-i18n="lineForecastLabel">Forecast SARI (OLS + Monthly Seasonality)</span>
           </label>
         </div>
 

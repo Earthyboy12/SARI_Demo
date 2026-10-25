@@ -8,6 +8,7 @@ import { normalizeICD10, classifyICD10, OUTSIDE_MODEL_SCOPE } from "./models/icd
 import { deriveSeason, getWeekInfo, getMonthInfo, formatDateISO } from "./utils/dateUtils.js";
 import { deriveAgeGroup, selectAgeModel, normalizeSex, calculateSARIForRow, processSurveillanceDataset, AGE_GROUPS } from "./models/sariCalculator.js";
 import { aggregateSurveillance } from "./utils/dataAggregator.js";
+import { calculateSARIForecast } from "./utils/forecastEngine.js";
 import { generateSyntheticSurveillanceData } from "./utils/demoDataGenerator.js";
 import {
   downloadCSVTemplate,
@@ -118,6 +119,8 @@ export const state = {
   chartPreferences: {
     timeAggregation: "weekly", // "weekly" | "monthly"
     mainIcdSubgroup: "all",
+    forecastEnabled: false,
+    forecastHorizon: "auto", // "auto" | "6m" | "1y" | "2y"
     smallMultiplesSharedY: true,
     overlayJCodes: true,
     sexLayout: "combined", // "combined" | "split"
@@ -127,7 +130,8 @@ export const state = {
       eligible: true,
       jcodes: true,
       sari: true,
-      subgroup: true
+      subgroup: true,
+      forecast: true
     }
   },
   hospitalInfo: {
@@ -730,6 +734,16 @@ function bindEvents() {
   });
   document.getElementById("toggle-line-subgroup")?.addEventListener("change", (e) => {
     state.chartPreferences.mainSeriesVisible.subgroup = e.target.checked;
+    renderMainTimeSeriesChart();
+  });
+    document.getElementById("toggle-forecast-enable")?.addEventListener("change", (e) => {
+    setForecastEnabled(e.target.checked);
+  });
+  document.getElementById("select-forecast-horizon")?.addEventListener("change", (e) => {
+    setForecastHorizon(e.target.value);
+  });
+  document.getElementById("toggle-line-forecast")?.addEventListener("change", (e) => {
+    state.chartPreferences.mainSeriesVisible.forecast = e.target.checked;
     renderMainTimeSeriesChart();
   });
   document.getElementById("select-main-icd-subgroup")?.addEventListener("change", (e) => {
@@ -1419,6 +1433,16 @@ function renderKPICards() {
   setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", fmt(k.estimatedSARINonJCode), `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`, true);
 }
 
+export function setForecastEnabled(enabled) {
+  state.chartPreferences.forecastEnabled = !!enabled;
+  renderMainTimeSeriesChart();
+}
+
+export function setForecastHorizon(horizon) {
+  state.chartPreferences.forecastHorizon = horizon || "auto";
+  renderMainTimeSeriesChart();
+}
+
 export function setMainIcdSubgroup(subgroup) {
   state.chartPreferences.mainIcdSubgroup = subgroup || "all";
   renderMainTimeSeriesChart();
@@ -1431,6 +1455,7 @@ export function renderMainTimeSeriesChart() {
 
   const isWeekly = state.chartPreferences.timeAggregation === "weekly";
   const series = isWeekly ? state.aggregatedResults.weeklySeries : state.aggregatedResults.monthlySeries;
+  const N = series.length;
 
   const labels = series.map((s) => (state.lang === "th" && s.labelTh ? s.labelTh : s.labelEn || s.label));
   const eligibleData = series.map((s) => s.totalEligible);
@@ -1438,7 +1463,7 @@ export function renderMainTimeSeriesChart() {
   const sariData = series.map((s) => Number(s.estimatedSARI.toFixed(2)));
 
   const datasets = [];
-  const vis = state.chartPreferences.mainSeriesVisible || { eligible: true, jcodes: true, sari: true, subgroup: true };
+  const vis = state.chartPreferences.mainSeriesVisible || { eligible: true, jcodes: true, sari: true, subgroup: true, forecast: true };
 
   const chkEligible = document.getElementById("toggle-line-eligible");
   const chkJcodes = document.getElementById("toggle-line-jcodes");
@@ -1449,10 +1474,22 @@ export function renderMainTimeSeriesChart() {
   const containerToggleSubgroup = document.getElementById("container-toggle-subgroup");
   const labelSubgroupLine = document.getElementById("label-subgroup-line-text");
 
+  // Forecast DOM elements
+  const isForecastActive = state.chartPreferences.forecastEnabled === true;
+  const chkForecastEnable = document.getElementById("toggle-forecast-enable");
+  const containerForecastHorizon = document.getElementById("container-forecast-horizon");
+  const selectForecastHorizon = document.getElementById("select-forecast-horizon");
+  const pillForecast = document.getElementById("forecast-stat-pill");
+  const containerToggleForecast = document.getElementById("container-toggle-forecast");
+  const chkLineForecast = document.getElementById("toggle-line-forecast");
+
   if (chkEligible) chkEligible.checked = vis.eligible !== false;
   if (chkJcodes) chkJcodes.checked = vis.jcodes !== false;
   if (chkSari) chkSari.checked = vis.sari !== false;
   if (chkSubgroup) chkSubgroup.checked = vis.subgroup !== false;
+  if (chkForecastEnable) chkForecastEnable.checked = isForecastActive;
+  if (selectForecastHorizon) selectForecastHorizon.value = state.chartPreferences.forecastHorizon || "auto";
+  if (chkLineForecast) chkLineForecast.checked = vis.forecast !== false;
 
   const selectedSubgroup = state.chartPreferences.mainIcdSubgroup || "all";
   if (selectSubgroupElem && selectSubgroupElem.value !== selectedSubgroup) {
@@ -1480,10 +1517,63 @@ export function renderMainTimeSeriesChart() {
     if (containerToggleSubgroup) containerToggleSubgroup.classList.add("hidden");
   }
 
+  // Handle Forecast Calculation
+  let forecastResult = null;
+  if (isForecastActive && N >= 3) {
+    forecastResult = calculateSARIForecast({
+      series,
+      timeAggregation: state.chartPreferences.timeAggregation,
+      horizonOption: state.chartPreferences.forecastHorizon || "auto"
+    });
+  }
+
+  let futurePoints = [];
+  let fullLabels = labels;
+  let H = 0;
+
+  if (isForecastActive && forecastResult) {
+    futurePoints = forecastResult.forecastPoints.filter((p) => !p.isBridge);
+    H = futurePoints.length;
+    const futureLabels = futurePoints.map((p) => (state.lang === "th" && p.labelTh ? p.labelTh : p.labelEn));
+    fullLabels = [...labels, ...futureLabels];
+
+    if (containerForecastHorizon) containerForecastHorizon.classList.remove("hidden");
+    if (pillForecast) {
+      pillForecast.classList.remove("hidden");
+      const sum = forecastResult.summary;
+      const isTh = state.lang === "th";
+      const dirIcon = sum.trendDirection === "increasing"
+        ? "fa-arrow-trend-up text-rose-500"
+        : (sum.trendDirection === "decreasing" ? "fa-arrow-trend-down text-emerald-600" : "fa-arrow-right text-slate-500");
+      const dirText = sum.trendDirection === "increasing"
+        ? (isTh ? "แนวโน้มเพิ่มขึ้น" : "Increasing")
+        : (sum.trendDirection === "decreasing" ? (isTh ? "แนวโน้มลดลง" : "Decreasing") : (isTh ? "แนวโน้มทรงตัว" : "Stable"));
+      const horizonText = isTh ? sum.horizonLabelTh : sum.horizonLabelEn;
+      const periodUnit = isWeekly ? (isTh ? "สัปดาห์" : "wk") : (isTh ? "เดือน" : "mo");
+
+      pillForecast.innerHTML = `
+        <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+        <span>${t("forecastStatPrefix")} <strong>${horizonText}</strong>: 
+        ประมาณการ SARI รวม <strong class="text-purple-900 font-bold">${sum.totalForecastSARI.toLocaleString()}</strong> ${isTh ? "ราย" : "cases"} 
+        (เฉลี่ย ${sum.avgForecastPerPeriod.toLocaleString()} / ${periodUnit}) &bull; 
+        <span class="inline-flex items-center gap-1 font-semibold text-purple-800"><i class="fa-solid ${dirIcon}"></i> ${dirText} (R&sup2; = ${sum.rSquared})</span> &bull; 
+        <span class="text-purple-700 underline underline-offset-2">${t("forecastMonthlySeasonDesc")}</span></span>
+      `;
+    }
+    if (containerToggleForecast) containerToggleForecast.classList.remove("hidden");
+  } else {
+    if (containerForecastHorizon) containerForecastHorizon.classList.add("hidden");
+    if (pillForecast) pillForecast.classList.add("hidden");
+    if (containerToggleForecast) containerToggleForecast.classList.add("hidden");
+  }
+
+  // Padding helper for historical series when forecast is active
+  const padData = (dataArr) => (H > 0 ? [...dataArr, ...Array(H).fill(null)] : dataArr);
+
   if (vis.eligible) {
     datasets.push({
       label: t("seriesEligibleAdmissions"),
-      data: eligibleData,
+      data: padData(eligibleData),
       borderColor: "#64748b",
       backgroundColor: "#64748b",
       borderWidth: 2,
@@ -1495,7 +1585,7 @@ export function renderMainTimeSeriesChart() {
   if (vis.jcodes) {
     datasets.push({
       label: t("seriesJCodeAdmissions"),
-      data: jCodeData,
+      data: padData(jCodeData),
       borderColor: "#2563eb",
       backgroundColor: "#2563eb",
       borderWidth: 2,
@@ -1510,7 +1600,7 @@ export function renderMainTimeSeriesChart() {
   if (vis.sari) {
     datasets.push({
       label: t("seriesEstimatedSARI"),
-      data: sariData,
+      data: padData(sariData),
       borderColor: themeColors.primary,
       backgroundColor: themeColors.primaryLight,
       borderWidth: 3,
@@ -1525,7 +1615,7 @@ export function renderMainTimeSeriesChart() {
     const subgroupData = series.map((s) => (s.icdCounts && s.icdCounts[selectedSubgroup]) || 0);
     datasets.push({
       label: `${selectedSubgroup} (${t("lineSubgroupAdmissions")})`,
-      data: subgroupData,
+      data: padData(subgroupData),
       borderColor: "#f59e0b",
       backgroundColor: "#f59e0b",
       borderWidth: 2.5,
@@ -1537,6 +1627,53 @@ export function renderMainTimeSeriesChart() {
     });
   }
 
+  // Forecast Series (Purple / Violet)
+  if (isForecastActive && forecastResult && vis.forecast !== false) {
+    const lastSariVal = Number(series[N - 1].estimatedSARI.toFixed(2));
+    const forecastLineData = [...Array(N - 1).fill(null), lastSariVal, ...futurePoints.map((p) => p.predictedSARI)];
+    const forecastUpperData = [...Array(N - 1).fill(null), lastSariVal, ...futurePoints.map((p) => p.upperCI)];
+    const forecastLowerData = [...Array(N - 1).fill(null), lastSariVal, ...futurePoints.map((p) => p.lowerCI)];
+
+    // Prediction Interval Band (Upper + Lower fill)
+    datasets.push({
+      label: state.lang === "th" ? "ขอบเขตบน 95% CI (Upper Bound)" : "95% Prediction Upper",
+      data: forecastUpperData,
+      borderColor: "rgba(139, 92, 246, 0.35)",
+      backgroundColor: "rgba(139, 92, 246, 0.10)",
+      fill: "+1",
+      borderWidth: 1,
+      borderDash: [2, 2],
+      pointRadius: 0,
+      tension: 0.2
+    });
+
+    datasets.push({
+      label: state.lang === "th" ? "ขอบเขตล่าง 95% CI (Lower Bound)" : "95% Prediction Lower",
+      data: forecastLowerData,
+      borderColor: "rgba(139, 92, 246, 0.35)",
+      backgroundColor: "transparent",
+      fill: false,
+      borderWidth: 1,
+      borderDash: [2, 2],
+      pointRadius: 0,
+      tension: 0.2
+    });
+
+    // Main Forecast Line
+    datasets.push({
+      label: t("lineForecastLabel"),
+      data: forecastLineData,
+      borderColor: "#8b5cf6", // Purple 500
+      backgroundColor: "#8b5cf6",
+      borderWidth: 3,
+      borderDash: [6, 4],
+      pointStyle: "circle",
+      pointRadius: futurePoints.length > 50 ? 1 : 3.5,
+      pointHoverRadius: 6,
+      tension: 0.2
+    });
+  }
+
   if (state.activeCharts.main) {
     state.activeCharts.main.destroy();
   }
@@ -1545,7 +1682,7 @@ export function renderMainTimeSeriesChart() {
   state.activeCharts.main = new Chart(ctx, {
     type: "line",
     data: {
-      labels,
+      labels: fullLabels,
       datasets
     },
     options: {
@@ -1566,20 +1703,36 @@ export function renderMainTimeSeriesChart() {
           callbacks: {
             afterBody: (context) => {
               const idx = context[0].dataIndex;
-              const item = series[idx];
-              if (!item) return "";
-              const nonJ = item.estimatedSARINonJ ? item.estimatedSARINonJ.toFixed(1) : "0.0";
-              const jSari = item.estimatedSARIJ ? item.estimatedSARIJ.toFixed(1) : "0.0";
-              const lines = [
-                "-----------------------",
-                `SARI from J-codes: ${jSari}`,
-                `SARI from Non-J: ${nonJ}`
-              ];
-              if (selectedSubgroup !== "all") {
-                const subCount = (item.icdCounts && item.icdCounts[selectedSubgroup]) || 0;
-                lines.push(`${selectedSubgroup} (Unweighted N): ${subCount}`);
+              if (idx < N) {
+                // Historical point
+                const item = series[idx];
+                if (!item) return "";
+                const nonJ = item.estimatedSARINonJ ? item.estimatedSARINonJ.toFixed(1) : "0.0";
+                const jSari = item.estimatedSARIJ ? item.estimatedSARIJ.toFixed(1) : "0.0";
+                const lines = [
+                  "-----------------------",
+                  `SARI from J-codes: ${jSari}`,
+                  `SARI from Non-J: ${nonJ}`
+                ];
+                if (selectedSubgroup !== "all") {
+                  const subCount = (item.icdCounts && item.icdCounts[selectedSubgroup]) || 0;
+                  lines.push(`${selectedSubgroup} (Unweighted N): ${subCount}`);
+                }
+                return lines;
+              } else if (forecastResult && futurePoints.length > 0) {
+                // Future forecast point
+                const futIdx = idx - N;
+                const pt = futurePoints[futIdx];
+                if (!pt) return "";
+                const isTh = state.lang === "th";
+                return [
+                  "-----------------------",
+                  `${isTh ? "SARI พยากรณ์ล่วงหน้า" : "Forecasted SARI"}: ${pt.predictedSARI}`,
+                  `95% CI: ${pt.lowerCI} – ${pt.upperCI}`,
+                  `${isTh ? "แบบจำลอง" : "Model"}: OLS Trend + Monthly Seasonal Index (Month ${pt.month})`
+                ];
               }
-              return lines;
+              return "";
             }
           }
         }
