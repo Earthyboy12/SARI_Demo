@@ -88,6 +88,9 @@ export const state = {
   view: "upload", // "upload" | "mapping" | "dashboard"
   dashboardMode: "simplified", // "simplified" | "advanced"
   quickNavCollapsed: (typeof localStorage !== "undefined" && localStorage.getItem("sari_quick_nav_collapsed") === "true") || false,
+  motionEnabled: (typeof localStorage !== "undefined" && localStorage.getItem("sari_motion_enabled") !== null)
+    ? localStorage.getItem("sari_motion_enabled") === "true"
+    : true,
   rawData: [],
   rawHeaders: [],
   columnMapping: {
@@ -293,10 +296,125 @@ export function updateQuickNavScrollSpy() {
   updateQuickNavActiveItem(currentSection);
 }
 
+
+// ========================================================
+// MOTION GRAPHICS & ANIMATION ENGINE
+// ========================================================
+export function setMotionEnabled(enabled) {
+  state.motionEnabled = !!enabled;
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem("sari_motion_enabled", String(state.motionEnabled));
+    } catch (e) {}
+  }
+  updateMotionUI();
+  if (state.view === "dashboard" && state.aggregatedResults) {
+    renderDashboardPanels();
+  }
+}
+
+export function toggleMotion() {
+  setMotionEnabled(!state.motionEnabled);
+}
+
+export function updateMotionUI() {
+  if (typeof document === "undefined") return;
+  const isEnabled = state.motionEnabled !== false;
+  if (isEnabled) {
+    document.body.classList.remove("motion-reduced");
+    document.body.classList.add("motion-enhanced");
+  } else {
+    document.body.classList.remove("motion-enhanced");
+    document.body.classList.add("motion-reduced");
+  }
+
+  const btn = document.getElementById("btn-toggle-motion");
+  const label = document.getElementById("motion-toggle-label");
+  const icon = document.getElementById("motion-toggle-icon");
+  const dot = document.getElementById("motion-indicator-dot");
+
+  if (btn) {
+    btn.setAttribute("title", t("motionTitle"));
+    btn.setAttribute("aria-pressed", isEnabled ? "true" : "false");
+  }
+  if (label) {
+    label.textContent = isEnabled ? t("motionOn") : t("motionOff");
+  }
+  if (icon) {
+    icon.className = isEnabled
+      ? "fa-solid fa-wand-magic-sparkles text-amber-300 text-[11px]"
+      : "fa-solid fa-pause text-slate-400 text-[11px]";
+  }
+  if (dot) {
+    dot.className = isEnabled
+      ? "w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse"
+      : "w-2.5 h-2.5 rounded-full bg-slate-400";
+  }
+}
+
+const activeNumberCounters = new Map();
+
+export function animateValue(elemId, targetValue, isDecimal = false, decimals = 1, duration = 850) {
+  if (typeof document === "undefined") return;
+  const elem = document.getElementById(elemId);
+  if (!elem) return;
+
+  if (activeNumberCounters.has(elemId)) {
+    cancelAnimationFrame(activeNumberCounters.get(elemId));
+    activeNumberCounters.delete(elemId);
+  }
+
+  const endVal = typeof targetValue === "number" ? targetValue : parseFloat(targetValue) || 0;
+
+  if (!state.motionEnabled) {
+    elem.textContent = isDecimal ? endVal.toFixed(decimals) : Math.round(endVal).toLocaleString();
+    return;
+  }
+
+  let startVal = 0;
+  const rawText = elem.textContent.replace(/[^\d.-]/g, "");
+  if (rawText && !isNaN(parseFloat(rawText))) {
+    startVal = parseFloat(rawText);
+  }
+
+  if (Math.abs(startVal - endVal) < (isDecimal ? 0.01 : 1)) {
+    elem.textContent = isDecimal ? endVal.toFixed(decimals) : Math.round(endVal).toLocaleString();
+    return;
+  }
+
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out expo: 1 - Math.pow(2, -10 * progress)
+    const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+    const current = startVal + (endVal - startVal) * ease;
+
+    if (isDecimal) {
+      elem.textContent = current.toFixed(decimals);
+    } else {
+      elem.textContent = Math.round(current).toLocaleString();
+    }
+
+    if (progress < 1) {
+      const rafId = requestAnimationFrame(step);
+      activeNumberCounters.set(elemId, rafId);
+    } else {
+      activeNumberCounters.delete(elemId);
+      elem.textContent = isDecimal ? endVal.toFixed(decimals) : Math.round(endVal).toLocaleString();
+    }
+  }
+
+  const rafId = requestAnimationFrame(step);
+  activeNumberCounters.set(elemId, rafId);
+}
+
 export function initApp() {
   bindEvents();
   setTheme(state.theme);
   updateStaticTexts();
+  updateMotionUI();
   toggleQuickNav(state.quickNavCollapsed);
   renderApp();
 }
@@ -398,6 +516,8 @@ export function updateStaticTexts() {
     const key = el.getAttribute("data-i18n-placeholder");
     if (key) el.setAttribute("placeholder", t(key));
   });
+
+  updateMotionUI();
 }
 
 export function updateHospitalInfo(name, province) {
@@ -1283,21 +1403,20 @@ function renderActiveModelBadge() {
 function renderKPICards() {
   const k = state.aggregatedResults.kpis;
   const isFull = state.settings.fullPrecision;
-  const fmt = (num) => (isFull ? num.toFixed(4) : num.toFixed(1));
+  const decimals = isFull ? 4 : 1;
 
-  const setCard = (valId, subId, mainVal, subVal) => {
-    const v = document.getElementById(valId);
+  const setCard = (valId, subId, numericVal, subVal, isDecimal = false) => {
+    animateValue(valId, numericVal, isDecimal, decimals);
     const s = document.getElementById(subId);
-    if (v) v.textContent = mainVal;
     if (s) s.textContent = subVal;
   };
 
-  setCard("kpi-total-val", "kpi-total-sub", k.totalFiltered.toLocaleString(), `${state.lang === "th" ? "จากทั้งหมด" : "of"} ${k.totalUploaded.toLocaleString()} ${state.lang === "th" ? "รายการ" : "rows"}`);
-  setCard("kpi-eligible-val", "kpi-eligible-sub", k.eligibleAdmissions.toLocaleString(), `${k.eligiblePercent.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษา" : "of admissions"}`);
-  setCard("kpi-sari-val", "kpi-sari-sub", fmt(k.estimatedSARITotal), `${((k.estimatedSARITotal / (k.eligibleAdmissions || 1)) * 100).toFixed(1)} ${state.lang === "th" ? "ต่อ 100 การรับรักษา" : "per 100 eligible"}`);
-  setCard("kpi-jcodes-val", "kpi-jcodes-sub", k.studyJCodeAdmissions.toLocaleString(), `${k.pctJCodeAdmissions.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษาเข้าเกณฑ์" : "of eligible"}`);
-  setCard("kpi-sari-j-val", "kpi-sari-j-sub", fmt(k.estimatedSARIJCode), `${(100 - k.pctEstimatedSARIFromNonJ).toFixed(1)}% ${state.lang === "th" ? "ของ SARI ประมาณการ" : "of estimated SARI"}`);
-  setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", fmt(k.estimatedSARINonJCode), `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`);
+  setCard("kpi-total-val", "kpi-total-sub", k.totalFiltered, `${state.lang === "th" ? "จากทั้งหมด" : "of"} ${k.totalUploaded.toLocaleString()} ${state.lang === "th" ? "รายการ" : "rows"}`, false);
+  setCard("kpi-eligible-val", "kpi-eligible-sub", k.eligibleAdmissions, `${k.eligiblePercent.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษา" : "of admissions"}`, false);
+  setCard("kpi-sari-val", "kpi-sari-sub", k.estimatedSARITotal, `${((k.estimatedSARITotal / (k.eligibleAdmissions || 1)) * 100).toFixed(1)} ${state.lang === "th" ? "ต่อ 100 การรับรักษา" : "per 100 eligible"}`, true);
+  setCard("kpi-jcodes-val", "kpi-jcodes-sub", k.studyJCodeAdmissions, `${k.pctJCodeAdmissions.toFixed(1)}% ${state.lang === "th" ? "ของการรับรักษาเข้าเกณฑ์" : "of eligible"}`, false);
+  setCard("kpi-sari-j-val", "kpi-sari-j-sub", fmt(k.estimatedSARIJCode), `${(100 - k.pctEstimatedSARIFromNonJ).toFixed(1)}% ${state.lang === "th" ? "ของ SARI ประมาณการ" : "of estimated SARI"}`, true);
+  setCard("kpi-sari-nonj-val", "kpi-sari-nonj-sub", fmt(k.estimatedSARINonJCode), `${k.pctEstimatedSARIFromNonJ.toFixed(1)}% ${state.lang === "th" ? "ของ SARI ทั้งหมด" : "of total SARI"}`, true);
 }
 
 export function setMainIcdSubgroup(subgroup) {
@@ -1432,6 +1551,7 @@ export function renderMainTimeSeriesChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: state.motionEnabled ? { duration: 850, easing: "easeOutQuart" } : false,
       interaction: { mode: "index", intersect: false },
       plugins: {
         legend: {
@@ -1575,6 +1695,7 @@ function renderAgeGroupSmallMultiples() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: state.motionEnabled ? { duration: 750, easing: "easeOutQuart" } : false,
         plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } },
         scales: {
           x: {
@@ -1893,6 +2014,7 @@ function renderICDCompositionChart() {
       indexAxis: "y",
       responsive: true,
       maintainAspectRatio: false,
+      animation: state.motionEnabled ? { duration: 800, easing: "easeOutQuart" } : false,
       plugins: {
         legend: { display: false },
         tooltip: {

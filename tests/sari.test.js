@@ -643,6 +643,41 @@ async function runTests() {
     assert.doesNotThrow(() => renderMainTimeSeriesChart());
   });
 
+
+  console.log("\n[13] Testing Motion Graphics Engine & State Management:");
+
+  await test("Motion Graphics translation keys exist in both Thai and English", async () => {
+    const { TRANSLATIONS } = await import("../src/i18n/translations.js");
+    const motionKeys = ["motionToggleLabel", "motionOn", "motionOff", "motionTitle", "liveTelemetryStatus"];
+    for (const key of motionKeys) {
+      assert(TRANSLATIONS.th[key], `Missing Thai translation for ${key}`);
+      assert(TRANSLATIONS.en[key], `Missing English translation for ${key}`);
+    }
+  });
+
+  await test("App exports setMotionEnabled, toggleMotion, animateValue, and updateMotionUI safely", async () => {
+    const { state, setMotionEnabled, toggleMotion, animateValue, updateMotionUI } = await import("../src/app.js");
+    assert.strictEqual(typeof setMotionEnabled, "function");
+    assert.strictEqual(typeof toggleMotion, "function");
+    assert.strictEqual(typeof animateValue, "function");
+    assert.strictEqual(typeof updateMotionUI, "function");
+
+    // Toggle motion state
+    setMotionEnabled(false);
+    assert.strictEqual(state.motionEnabled, false);
+
+    toggleMotion();
+    assert.strictEqual(state.motionEnabled, true);
+
+    setMotionEnabled(true);
+    assert.strictEqual(state.motionEnabled, true);
+
+    // Verify safe execution without DOM
+    assert.doesNotThrow(() => updateMotionUI());
+    assert.doesNotThrow(() => animateValue("kpi-total-val", 1250, false));
+    assert.doesNotThrow(() => animateValue("kpi-sari-val", 42.5, true, 1));
+  });
+
   console.log("\n=================================================");
   console.log(`TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   console.log("=================================================");

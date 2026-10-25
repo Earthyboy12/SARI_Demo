@@ -520,9 +520,117 @@
       animation: sectionPulseHighlight 1.3s ease-out;
       border-radius: 1rem;
     }
+
+    /* ========================================================
+       MOTION GRAPHICS & SCIENTIFIC ANIMATION ENGINE
+       ======================================================== */
+    @keyframes ecgScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes pulseGlowOrb {
+      0%, 100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.18;
+      }
+      50% {
+        transform: scale(1.18) translate(-14px, 10px);
+        opacity: 0.38;
+      }
+    }
+
+    @keyframes pulseRadarBeacon {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+      }
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 9px rgba(52, 211, 153, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+      }
+    }
+
+    @keyframes staggerFadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes liveShimmerBar {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Ambient animated orbs and waves */
+    body.motion-enhanced .ecg-flow-svg {
+      animation: ecgScroll 10s linear infinite;
+    }
+
+    body.motion-enhanced .hero-ambient-orb-1 {
+      animation: pulseGlowOrb 7.5s ease-in-out infinite;
+    }
+
+    body.motion-enhanced .hero-ambient-orb-2 {
+      animation: pulseGlowOrb 9.5s ease-in-out infinite reverse;
+    }
+
+    body.motion-enhanced .radar-beacon-dot {
+      animation: pulseRadarBeacon 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+
+    /* Staggered entrance animations */
+    body.motion-enhanced .motion-stagger-1 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 30ms; }
+    body.motion-enhanced .motion-stagger-2 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 70ms; }
+    body.motion-enhanced .motion-stagger-3 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 110ms; }
+    body.motion-enhanced .motion-stagger-4 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 150ms; }
+    body.motion-enhanced .motion-stagger-5 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 190ms; }
+    body.motion-enhanced .motion-stagger-6 { animation: staggerFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 230ms; }
+
+    /* KPI Cards 3D Lift & Dynamic Interactive Shimmer */
+    body.motion-enhanced .kpi-card {
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    body.motion-enhanced .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -140%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+      transition: left 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    body.motion-enhanced .kpi-card:hover::before {
+      left: 140%;
+    }
+    body.motion-enhanced .kpi-card:hover {
+      transform: translateY(-4px) scale(1.012);
+      box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 8px 12px -4px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Animated Progress Bar Fills */
+    .motion-bar {
+      transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Reduced Motion Mode for Accessibility */
+    body.motion-reduced * {
+      animation: none !important;
+      transition-duration: 0.001ms !important;
+    }
   </style>
 </head>
-<body class="min-h-full flex flex-col text-slate-800 bg-slate-50 antialiased">
+<body class="min-h-full flex flex-col text-slate-800 bg-slate-50 antialiased motion-enhanced">
 
   <!-- TOP SURVEILLANCE NAVBAR -->
   <header class="bg-gradient-to-r from-[#022c1b] via-[#064e3b] to-[#043825] text-white border-b border-emerald-600/30 sticky top-0 z-40 shadow-lg shadow-emerald-950/20 no-print">
@@ -1294,7 +1402,7 @@
       <div id="kpi-cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         
         <!-- Card 1: Total Uploaded -->
-        <div id="kpi-card-total" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-slate-400 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-total" class="kpi-card motion-stagger-1 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-slate-400 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiTotalUploaded">
             Total Admissions
           </span>
@@ -1305,7 +1413,7 @@
         </div>
 
         <!-- Card 2: Eligible Admissions -->
-        <div id="kpi-card-eligible" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-indigo-500 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-eligible" class="kpi-card motion-stagger-2 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-indigo-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiEligibleAdmissions">
             Study-Eligible
           </span>
@@ -1316,7 +1424,7 @@
         </div>
 
         <!-- Card 3: Estimated SARI (Hero KPI Card) -->
-        <div id="kpi-card-sari" class="kpi-card bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div id="kpi-card-sari" class="kpi-card motion-stagger-3 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div class="flex items-center justify-between">
             <span class="text-xs sm:text-sm font-black text-emerald-950 uppercase tracking-wide flex items-center gap-1.5" data-i18n="kpiEstimatedSARI">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1331,7 +1439,7 @@
         </div>
 
         <!-- Card 4: Study J-codes (Advanced Only) -->
-        <div id="kpi-card-jcodes" class="kpi-card dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-blue-500 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-jcodes" class="kpi-card motion-stagger-4 dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-blue-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiStudyJCodes">
             Study J-codes
           </span>
@@ -1342,7 +1450,7 @@
         </div>
 
         <!-- Card 5: Estimated SARI from J-codes (Advanced Only) -->
-        <div id="kpi-card-sari-j" class="kpi-card dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-cyan-500 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-sari-j" class="kpi-card motion-stagger-5 dashboard-advanced-only hidden bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-cyan-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide truncate" data-i18n="kpiSARIFromJ">
             SARI from J-codes
           </span>
@@ -1353,7 +1461,7 @@
         </div>
 
         <!-- Card 6: Estimated SARI from Non-J -->
-        <div id="kpi-card-sari-nonj" class="kpi-card bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-teal-500 shadow-xs flex flex-col justify-between">
+        <div id="kpi-card-sari-nonj" class="kpi-card motion-stagger-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 border-t-4 border-t-teal-500 shadow-xs flex flex-col justify-between">
           <span class="text-xs sm:text-sm font-bold text-teal-800 uppercase tracking-wide truncate" data-i18n="kpiSARIFromNonJ">
             SARI from Non-J
           </span>
