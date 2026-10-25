@@ -405,6 +405,19 @@ async function runTests() {
     assert.strictEqual(state.dashboardMode, "simplified");
   });
 
+  await test("All 6 KPI cards (including J and Non-J) are permanently visible in index.html", async () => {
+    const fs = await import("fs");
+    const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf-8");
+    assert(html.includes('id="kpi-card-total"'), "Missing total admissions card");
+    assert(html.includes('id="kpi-card-sari"'), "Missing total sari card");
+    assert(html.includes('id="kpi-card-eligible"'), "Missing eligible admissions card");
+    assert(html.includes('id="kpi-card-jcodes"'), "Missing J-codes admissions card");
+    assert(html.includes('id="kpi-card-sari-j"'), "Missing SARI J card");
+    assert(html.includes('id="kpi-card-sari-nonj"'), "Missing SARI Non-J card");
+    assert(!html.includes('id="kpi-card-jcodes" class="kpi-card motion-stagger-4 dashboard-advanced-only hidden'), "kpi-card-jcodes must not be hidden in simplified mode");
+    assert(!html.includes('id="kpi-card-sari-j" class="kpi-card motion-stagger-5 dashboard-advanced-only hidden'), "kpi-card-sari-j must not be hidden in simplified mode");
+  });
+
   await test("Facility metadata translation keys exist and updateHospitalInfo sets values properly", async () => {
     const { TRANSLATIONS } = await import("../src/i18n/translations.js");
     const facilityKeys = [
@@ -756,6 +769,77 @@ async function runTests() {
     });
     assert.strictEqual(fcst6m.summary.horizonSteps, 6, "6m horizon must produce 6 steps");
     assert.strictEqual(fcst6m.forecastPoints.length, 7);
+  });
+
+  await test("calculateSARIForecast generates accurate 52-week epidemiological seasonal forecast (weekly surveillance)", async () => {
+    const { calculateSARIForecast } = await import("../src/utils/forecastEngine.js");
+
+    // 2 years (104 weeks) of historical weekly data
+    const weeklySeries = [];
+    const baseDate = new Date(2023, 0, 2); // Monday, Jan 2, 2023
+    for (let w = 0; w < 104; w++) {
+      const curDate = new Date(baseDate.getTime() + w * 7 * 86400000);
+      const y = curDate.getFullYear();
+      const epiWeek = (w % 52) + 1;
+      const isPeak = epiWeek >= 26 && epiWeek <= 42; // Rainy season peak
+      const sari = 15 + w * 0.08 + (isPeak ? 12 : 0) + Math.sin(epiWeek / 3) * 2;
+      weeklySeries.push({
+        key: `${y}-W${String(epiWeek).padStart(2, "0")}`,
+        year: y,
+        weekNumber: epiWeek,
+        startDate: curDate.toISOString().slice(0, 10),
+        labelEn: `W${epiWeek} ${y}`,
+        labelTh: `สัปดาห์ที่ ${epiWeek} ${y + 543}`,
+        estimatedSARI: Math.max(0, sari)
+      });
+    }
+
+    const t0 = performance.now();
+    // Auto horizon: 104 weeks input -> 104 weeks forward forecast (2 years ahead)
+    const fcstAuto = calculateSARIForecast({
+      series: weeklySeries,
+      timeAggregation: "weekly",
+      horizonOption: "auto"
+    });
+    const duration = performance.now() - t0;
+
+    assert(fcstAuto !== null, "Weekly forecast result must not be null");
+    assert.strictEqual(fcstAuto.summary.timeAggregation, "weekly");
+    assert.strictEqual(fcstAuto.summary.modelType, "Weekly Seasonal Linear Regression (52 Epi-weeks)");
+    assert.strictEqual(fcstAuto.summary.horizonSteps, 104, "Auto horizon must equal 104 historical weeks");
+    assert.strictEqual(fcstAuto.forecastPoints.length, 105, "Must have 1 bridge + 104 future points");
+    assert.strictEqual(fcstAuto.forecastPoints[0].isBridge, true, "First point must be bridge point");
+    assert.strictEqual(
+      fcstAuto.forecastPoints[0].predictedSARI,
+      Number(weeklySeries[103].estimatedSARI.toFixed(2)),
+      "Bridge point value must equal last historical value"
+    );
+    assert(duration < 50, `Weekly forecast execution must be ultra-fast (<50ms), took ${duration.toFixed(2)}ms`);
+
+    // Verify non-negative prediction constraint and CI bounds
+    for (const pt of fcstAuto.forecastPoints) {
+      assert(pt.predictedSARI >= 0, "Forecast must be non-negative");
+      assert(pt.lowerCI >= 0, "Lower CI must be non-negative");
+      assert(pt.upperCI >= pt.predictedSARI, "Upper CI must be >= predicted SARI");
+    }
+
+    // 1-Year Horizon: 52 weeks forward
+    const fcst1y = calculateSARIForecast({
+      series: weeklySeries,
+      timeAggregation: "weekly",
+      horizonOption: "1y"
+    });
+    assert.strictEqual(fcst1y.summary.horizonSteps, 52, "1y horizon must produce 52 steps");
+    assert.strictEqual(fcst1y.forecastPoints.length, 53);
+
+    // 6-Month Horizon: 26 weeks forward
+    const fcst6m = calculateSARIForecast({
+      series: weeklySeries,
+      timeAggregation: "weekly",
+      horizonOption: "6m"
+    });
+    assert.strictEqual(fcst6m.summary.horizonSteps, 26, "6m horizon must produce 26 steps");
+    assert.strictEqual(fcst6m.forecastPoints.length, 27);
   });
 
   await test("App exports setForecastEnabled and setForecastHorizon and safely updates state", async () => {

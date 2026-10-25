@@ -1175,13 +1175,7 @@ function applyDashboardModeLayout(mode) {
   });
 
   if (kpiGrid) {
-    if (isSimplify) {
-      kpiGrid.classList.remove("lg:grid-cols-6");
-      kpiGrid.classList.add("lg:grid-cols-4");
-    } else {
-      kpiGrid.classList.remove("lg:grid-cols-4");
-      kpiGrid.classList.add("lg:grid-cols-6");
-    }
+    kpiGrid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5";
   }
 
   if (!isSimplify) {
@@ -1488,7 +1482,25 @@ export function renderMainTimeSeriesChart() {
   if (chkSari) chkSari.checked = vis.sari !== false;
   if (chkSubgroup) chkSubgroup.checked = vis.subgroup !== false;
   if (chkForecastEnable) chkForecastEnable.checked = isForecastActive;
-  if (selectForecastHorizon) selectForecastHorizon.value = state.chartPreferences.forecastHorizon || "auto";
+  if (selectForecastHorizon) {
+    selectForecastHorizon.value = state.chartPreferences.forecastHorizon || "auto";
+    const isTh = state.lang === "th";
+    const optAuto = selectForecastHorizon.querySelector('option[value="auto"]');
+    const opt6m = selectForecastHorizon.querySelector('option[value="6m"]');
+    const opt1y = selectForecastHorizon.querySelector('option[value="1y"]');
+    const opt2y = selectForecastHorizon.querySelector('option[value="2y"]');
+    if (isWeekly) {
+      if (optAuto) optAuto.textContent = isTh ? `เท่ากับข้อมูลจริง (Auto: ${N} สัปดาห์)` : `Historical Span (Auto: ${N} wks)`;
+      if (opt6m) opt6m.textContent = isTh ? "26 สัปดาห์ (~6 เดือน)" : "26 Weeks (~6 Months)";
+      if (opt1y) opt1y.textContent = isTh ? "52 สัปดาห์ (~1 ปี)" : "52 Weeks (~1 Year)";
+      if (opt2y) opt2y.textContent = isTh ? "104 สัปดาห์ (~2 ปี)" : "104 Weeks (~2 Years)";
+    } else {
+      if (optAuto) optAuto.textContent = isTh ? `เท่ากับข้อมูลจริง (Auto: ${N} เดือน)` : `Historical Span (Auto: ${N} mos)`;
+      if (opt6m) opt6m.textContent = isTh ? "6 เดือน (6 Months)" : "6 Months";
+      if (opt1y) opt1y.textContent = isTh ? "12 เดือน (~1 ปี)" : "12 Months (~1 Year)";
+      if (opt2y) opt2y.textContent = isTh ? "24 เดือน (~2 ปี)" : "24 Months (~2 Years)";
+    }
+  }
   if (chkLineForecast) chkLineForecast.checked = vis.forecast !== false;
 
   const selectedSubgroup = state.chartPreferences.mainIcdSubgroup || "all";
@@ -1557,7 +1569,7 @@ export function renderMainTimeSeriesChart() {
         ประมาณการ SARI รวม <strong class="text-purple-900 font-bold">${sum.totalForecastSARI.toLocaleString()}</strong> ${isTh ? "ราย" : "cases"} 
         (เฉลี่ย ${sum.avgForecastPerPeriod.toLocaleString()} / ${periodUnit}) &bull; 
         <span class="inline-flex items-center gap-1 font-semibold text-purple-800"><i class="fa-solid ${dirIcon}"></i> ${dirText} (R&sup2; = ${sum.rSquared})</span> &bull; 
-        <span class="text-purple-700 underline underline-offset-2">${t("forecastMonthlySeasonDesc")}</span></span>
+        <span class="text-purple-700 underline underline-offset-2">${isWeekly ? (isTh ? "โมเดล Simple OLS Trend ผสานรอบฤดูกาลรายสัปดาห์ (52 Epi-weeks)" : "Simple OLS Trend + 52-Week Seasonal Index") : (isTh ? "โมเดล Simple OLS Trend ผสานรอบฤดูกาลรายเดือน (12 Calendar Months)" : "Simple OLS Trend + 12-Month Seasonal Index")}</span></span>
       `;
     }
     if (containerToggleForecast) containerToggleForecast.classList.remove("hidden");
@@ -1729,7 +1741,7 @@ export function renderMainTimeSeriesChart() {
                   "-----------------------",
                   `${isTh ? "SARI พยากรณ์ล่วงหน้า" : "Forecasted SARI"}: ${pt.predictedSARI}`,
                   `95% CI: ${pt.lowerCI} – ${pt.upperCI}`,
-                  `${isTh ? "แบบจำลอง" : "Model"}: OLS Trend + Monthly Seasonal Index (Month ${pt.month})`
+                  `${isTh ? "แบบจำลอง" : "Model"}: OLS Trend + ${isWeekly ? `Weekly Seasonal Index (Epi-week ${pt.weekNumber})` : `Monthly Seasonal Index (Month ${pt.month})`}`
                 ];
               }
               return "";
